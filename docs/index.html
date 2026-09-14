@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>塗り重ね記録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light only;
+  --bg:#EEF0F2; --card:#FFFFFF; --ink:#14181A; --sub:#5B635F; --faint:#9AA0A4;
+  --line:#DDE1E4; --deep:#1B3A5C; --deep-s:#2C5480; --warn:#B8861B; --warn-bg:#F6EBCF;
+  --ok:#1F6B4E; --navh:0px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:#C9CFD5; color:var(--ink);
+  font-family:"Noto Sans JP","Noto Sans CJK JP","Hiragino Sans",sans-serif;
+  line-height:1.75; display:flex; justify-content:center; min-height:100dvh;
+}
+h1,h2,h3,p,li,div,span,b{word-break:auto-phrase; line-break:strict;}
+h1,h2,h3{text-wrap:balance;}
+
+.phone{width:100%; max-width:390px; background:var(--bg); min-height:100dvh; position:relative; display:flex; flex-direction:column;}
+
+/* header */
+.hd{position:sticky; top:0; z-index:20; background:var(--bg); padding:14px 16px 10px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--line);}
+.hd .ttl{font-size:16px; font-weight:700; flex:1; min-width:0;}
+.hd .ttl small{display:block; font-size:12px; font-weight:400; color:var(--sub);}
+.who{display:flex; align-items:center; gap:7px; background:var(--deep); color:#fff; border-radius:999px; padding:5px 12px 5px 6px; flex:none;}
+.who i{width:22px; height:22px; border-radius:50%; background:#fff; color:var(--deep); font-size:11px; font-weight:700; display:grid; place-items:center; font-style:normal;}
+.who b{font-size:12px; font-weight:700;}
+.who b span{display:block; font-size:10px; font-weight:400; opacity:.8; line-height:1.2;}
+.hd .home{flex:none; background:none; border:1px solid var(--line); border-radius:999px; padding:6px 11px; font-size:12px; color:var(--sub); font-family:inherit; cursor:pointer;}
+
+.body{flex:1; padding:16px 16px 40px;}
+.sc{display:none;}
+.sc.on{display:block; animation:fade .28s ease both;}
+@keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+.card{background:var(--card); border-radius:14px; padding:16px;}
+.card + .card{margin-top:12px;}
+.sec{font-size:13px; font-weight:700; color:var(--sub); margin:20px 2px 8px;}
+
+/* buttons */
+.btn{display:block; width:100%; border:0; border-radius:12px; padding:17px 14px; font-family:inherit; font-size:17px; font-weight:700; background:var(--deep); color:#fff; cursor:pointer;}
+.btn.ghost{background:var(--card); color:var(--ink); border:1px solid var(--line);}
+.btn:disabled{background:#D7DBDE; color:#9AA0A4; cursor:default;}
+.pair{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+/* entry */
+.entry-t{font-size:30px; font-weight:900; letter-spacing:-.02em; line-height:1.3;}
+.entry-s{font-size:15px; color:var(--sub); margin-top:6px;}
+.peek{margin:20px 0; border-radius:14px; overflow:hidden; border:7px solid #0F1417; background:var(--bg); padding:10px; transform:scale(.98);}
+.peek .mini{font-size:11px; font-weight:700;}
+.peek .mrow{display:flex; gap:6px; margin:8px 0; font-size:10px; color:var(--sub);}
+.peek .mrow span{background:#fff; border-radius:6px; padding:5px 7px;}
+.peek img{width:100%; height:78px; object-fit:cover; border-radius:8px; display:block;}
+.peek .mb{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px;}
+.peek .mb b{font-size:10px; text-align:center; padding:8px 0; border-radius:7px; background:var(--deep); color:#fff;}
+.peek .mb b.o{background:#fff; color:var(--ink); border:1px solid var(--line);}
+.foot{font-size:12px; color:var(--sub); text-align:center; margin-top:14px;}
+
+/* seed */
+.seed-note{font-size:13px; color:var(--sub); background:#E3E8EC; border-radius:10px; padding:11px 13px; margin-bottom:14px;}
+.seed-row{display:flex; justify-content:space-between; align-items:baseline; padding:13px 0; border-bottom:1px solid var(--line);}
+.seed-row:last-of-type{border-bottom:0;}
+.seed-row .k{font-size:14px;}
+.seed-row .v{font-size:26px; font-weight:900; font-variant-numeric:tabular-nums;}
+.seed-row .v em{font-size:13px; font-weight:400; font-style:normal; color:var(--sub); margin-left:3px;}
+
+/* faces */
+.banner{width:100%; height:108px; object-fit:cover; border-radius:12px; display:block; margin-bottom:12px;}
+.face{display:flex; gap:12px; align-items:center; width:100%; text-align:left; background:var(--card); border:0; border-radius:12px; padding:12px; font-family:inherit; cursor:pointer;}
+.face + .face{margin-top:8px;}
+.face img{width:64px; height:48px; object-fit:cover; border-radius:8px; flex:none;}
+.face .fn{font-size:16px; font-weight:700;}
+.face .fp{font-size:12px; color:var(--sub);}
+.face .fid{margin-left:auto; font-size:11px; font-weight:700; color:var(--deep); background:#E7EEF6; border-radius:6px; padding:4px 8px; flex:none;}
+.face.off{opacity:.42; cursor:default;}
+.face.off .fid{background:#E8EBED; color:var(--faint);}
+
+/* metrics */
+.metrics{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:14px; font-weight:700;}
+.metrics span{color:var(--sub); font-weight:400; font-size:12px; margin-right:2px;}
+.std{font-size:12px; color:var(--sub); margin-top:8px; padding-top:8px; border-top:1px solid var(--line);}
+
+/* shot */
+.shot{position:relative; width:100%; border:0; padding:0; border-radius:12px; overflow:hidden; background:#1A222C; aspect-ratio:4/3; display:grid; place-items:center; cursor:pointer; font-family:inherit;}
+.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .3s;}
+.shot.has img{opacity:1;}
+.shot .guide{position:absolute; inset:13%; border:2px dashed rgba(255,255,255,.7); border-radius:6px;}
+.shot .lb{position:relative; z-index:1; color:#fff; font-size:15px; font-weight:700;}
+.shot.has .lb{display:none;}
+.shot.has .guide{opacity:.3;}
+
+/* question */
+.q + .q{margin-top:10px;}
+.q h3{font-size:15px; font-weight:700;}
+.q .src{font-size:12px; color:var(--faint); margin:2px 0 11px;}
+.q .pair b{font-weight:700;}
+.opt{border:1px solid var(--line); background:var(--card); border-radius:10px; padding:13px 8px; font-family:inherit; font-size:15px; font-weight:700; color:var(--ink); cursor:pointer;}
+.opt.sel{background:var(--deep); color:#fff; border-color:var(--deep);}
+
+/* history */
+.hcount{display:flex; align-items:baseline; gap:8px; margin-bottom:4px;}
+.hcount b{font-size:22px; font-weight:900;}
+.hnote{font-size:12px; color:var(--sub); margin-bottom:10px;}
+.hc{display:flex; gap:10px; background:var(--card); border-radius:12px; overflow:hidden;}
+.hc + .hc{margin-top:8px;}
+.hc img{width:88px; object-fit:cover; flex:none;}
+.hc .b{padding:11px 12px 12px 0; min-width:0;}
+.hc .m{font-size:11px; color:var(--faint);}
+.hc .d{font-size:16px; font-weight:700; margin:1px 0 3px;}
+.hc .d.wait{color:var(--deep);}
+.hc .d.go{color:var(--warn);}
+.hc p{font-size:13px; color:var(--sub); line-height:1.7;}
+.hc .rw{display:inline-block; font-size:11px; font-weight:700; color:var(--warn); background:var(--warn-bg); border-radius:5px; padding:1px 7px; margin-top:5px;}
+.hc.today{outline:2px solid var(--deep); outline-offset:-2px;}
+
+/* mic */
+.mic{width:100%; display:flex; align-items:center; justify-content:center; gap:9px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; font-family:inherit; font-size:15px; font-weight:700; color:var(--ink); cursor:pointer;}
+.mic.on{background:var(--deep); color:#fff; border-color:var(--deep);}
+.mic svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round;}
+.said{background:var(--card); border-radius:12px; padding:13px 14px; font-size:14px; margin-top:8px;}
+
+/* done */
+.stamp{text-align:center; font-size:20px; font-weight:900; margin:6px 0 14px;}
+.clock{text-align:center; font-size:32px; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+.clock small{display:block; font-size:12px; font-weight:400; color:var(--sub); letter-spacing:0;}
+.dphoto{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; display:block; margin:12px 0;}
+.slot{display:grid; grid-template-columns:64px 1fr; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); align-items:baseline;}
+.slot:last-child{border-bottom:0;}
+.slot .k{font-size:12px; color:var(--sub);}
+.slot .v{font-size:15px; font-weight:700;}
+.slot .v.empty{font-weight:400; color:var(--faint);}
+
+/* office */
+.kpi{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.kpi .c{background:var(--card); border-radius:12px; padding:13px 14px;}
+.kpi b{display:block; font-size:28px; font-weight:900; font-variant-numeric:tabular-nums;}
+.kpi span{font-size:12px; color:var(--sub);}
+.bar{margin-top:12px;}
+.bar .r{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+.bar .r i{font-style:normal; font-size:13px; width:26px; flex:none;}
+.bar .t{flex:1; height:13px; background:#E2E6E9; border-radius:7px; overflow:hidden;}
+.bar .t u{display:block; height:100%; background:#93A3B2; border-radius:7px;}
+.bar .r.hi u{background:var(--deep);}
+.bar .r.hi i,.bar .r.hi em{font-weight:700;}
+.bar .r em{font-style:normal; font-size:13px; color:var(--sub); width:34px; text-align:right; font-variant-numeric:tabular-nums;}
+.kn{font-size:12px; color:var(--faint);}
+.kb{font-size:15px; font-weight:700; line-height:1.7; margin:4px 0 10px;}
+.kg{background:#EEF1F3; border-radius:9px; padding:10px 12px; font-size:12px; color:var(--sub); line-height:1.8;}
+
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important;}}
+
+@media (prefers-color-scheme:dark){
+  html,body{background:#C9CFD5 !important; color:#14181A !important;}
+  .phone{background:#EEF0F2 !important;}
+  .hd{background:#EEF0F2 !important; border-bottom-color:#DDE1E4 !important;}
+  .card,.opt,.mic,.said,.hc,.face,.btn.ghost{background:#FFFFFF !important; color:#14181A !important;}
+  .hd .ttl,.entry-t,.stamp,.clock,.slot .v,.face .fn,.hc .d,.kpi b,.kb,.seed-row .v{color:#14181A !important;}
+  .hd .ttl small,.entry-s,.foot,.sec,.std,.hnote,.hc p,.kpi span,.bar .r em,.kg,.slot .k,.face .fp,.q .src,.seed-note{color:#5B635F !important;}
+  .hc .m,.hc .d.wait,.slot .v.empty,.kn{color:#9AA0A4 !important;}
+  .hc .d.wait{color:#1B3A5C !important;}
+  .hc .d.go{color:#B8861B !important;}
+  .who,.btn,.opt.sel,.mic.on{background:#1B3A5C !important; color:#FFFFFF !important;}
+  .who i{background:#FFFFFF !important; color:#1B3A5C !important;}
+  .btn:disabled{background:#D7DBDE !important; color:#9AA0A4 !important;}
+  .face .fid{background:#E7EEF6 !important; color:#1B3A5C !important;}
+  .face.off .fid{background:#E8EBED !important; color:#9AA0A4 !important;}
+  .hc .rw{background:#F6EBCF !important; color:#B8861B !important;}
+  .seed-note{background:#E3E8EC !important;}
+  .kg{background:#EEF1F3 !important;}
+  .bar .t{background:#E2E6E9 !important;}
+  .bar .t u{background:#93A3B2 !important;}
+  .bar .r.hi u{background:#1B3A5C !important;}
+  .peek{background:#EEF0F2 !important; border-color:#0F1417 !important;}
+  .peek .mrow span{background:#FFFFFF !important;}
+  .peek .mb b{background:#1B3A5C !important; color:#FFFFFF !important;}
+  .peek .mb b.o{background:#FFFFFF !important; color:#14181A !important;}
+  .card,.slot,.seed-row,.face,.opt,.mic,.std{border-color:#DDE1E4 !important;}
+}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <header class="hd" id="hd" hidden>
+    <div class="ttl" id="hdTtl">みどりが丘ハイツ<small id="hdSub">外壁改修</small></div>
+    <div class="who" id="who"><i id="whoI">田</i><b id="whoN">田中<span id="whoR">職人</span></b></div>
+    <button class="home" type="button" onclick="go('entry')">入口</button>
+  </header>
+
+  <main class="body">
+
+    <!-- 入口 -->
+    <section class="sc on" id="sc-entry">
+      <div style="padding-top:14px">
+        <h1 class="entry-t">塗り重ね記録</h1>
+        <p class="entry-s">乾き具合の判断を残して、次の現場で使う</p>
+        <div class="peek" aria-hidden="true">
+          <div class="mini">南面 2階 <span style="font-weight:400;color:#5B635F">中塗り → 上塗り</span></div>
+          <div class="mrow"><span>22℃</span><span>68%</span><span>素地 26℃</span><span>4:20</span></div>
+          <img src="../images/IMG-03.png" alt="">
+          <div class="mb"><b>まだ塗れない</b><b class="o">塗れる</b></div>
+        </div>
+        <button class="btn" type="button" onclick="go('seed')">はじめる</button>
+        <p class="foot">北野塗装工業 ／ みどりが丘ハイツ 外壁改修</p>
+      </div>
+    </section>
+
+    <!-- 0. ナレッジ投入 -->
+    <section class="sc" id="sc-seed">
+      <p class="seed-note">実際はここに御社の記録が入ります。この先は、仮のナレッジを入れた状態でご覧ください。</p>
+      <div class="card">
+        <div class="seed-row"><span class="k">ベテランの判断</span><span class="v" id="sd1">0<em>件</em></span></div>
+        <div class="seed-row"><span class="k">うち 北面の記録</span><span class="v" id="sd2">0<em>件</em></span></div>
+        <div class="seed-row"><span class="k">うち 手直しになった記録</span><span class="v" id="sd3">0<em>件</em></span></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn" id="seedBtn" type="button" onclick="doSeed()">投入する</button></div>
+    </section>
+
+    <!-- 1. ベテランが残す -->
+    <section class="sc" id="sc-vet"></section>
+
+    <!-- 面一覧 -->
+    <section class="sc" id="sc-faces"></section>
+
+    <!-- 2. 若手が判断する -->
+    <section class="sc" id="sc-record"></section>
+
+    <!-- 3. 結果が返る -->
+    <section class="sc" id="sc-done"></section>
+
+    <!-- 4. 経営が見る -->
+    <section class="sc" id="sc-office"></section>
+
+  </main>
+</div>
+
+<script>
+/* ---------- 人 ---------- */
+var PEOPLE = {
+  vet:   { i:'田', name:'田中', role:'職人 22年' },
+  young: { i:'岡', name:'岡崎', role:'職人 1年目' },
+  office:{ i:'西', name:'西村', role:'工務' }
+};
+var who = 'vet';
+
+/* ---------- データ ---------- */
+var SEEDED = false;
+var KNOW = { all:128, north:34, rework:6 };
+var OFFICE = { done:128, pending:6 };
+var BARS = { S:5.5, E:5.5, N:7.5, W:5.5 };
+
+var FACES = [
+  { id:'M-S2', name:'南面 2階', proc:'中塗り → 上塗り', last:'前回 11:00', thumb:'../images/IMG-08.png' },
+  { id:'M-E1', name:'東面 1階', proc:'下塗り', last:'', thumb:'../images/IMG-09.png' },
+  { id:'M-N3', name:'北面 3階', proc:'中塗り → 上塗り', last:'前回 10:20', thumb:'../images/IMG-10.png' },
+  { id:'M-W4', name:'西面 4階', proc:'下塗り', last:'', thumb:'../images/IMG-11.png' }
+];
+
+var RECORDS = [
+  { id:'R-20260418-003', date:'4/18', face:'M-S1', wait:260, judge:'go',   result:'rework', photo:'../images/IMG-06.png', temp:23, hum:62, voice:'触った感じは大丈夫。進める' },
+  { id:'R-20260421-007', date:'4/21', face:'M-E2', wait:310, judge:'go',   result:'ok', photo:'../images/IMG-03.png', temp:24, hum:60, voice:'東はもう乾いてる。行く' },
+  { id:'R-20260502-004', date:'5/2',  face:'M-S3', wait:390, judge:'go',   result:'ok', photo:'../images/IMG-04.png', temp:22, hum:65, voice:'南はもう均一。30分見てから塗った' },
+  { id:'R-20260510-012', date:'5/10', face:'M-S4', wait:420, judge:'go',   result:'ok', photo:'../images/IMG-04.png', temp:23, hum:64, voice:'4階は乾きがいい。このくらいで揃う' },
+  { id:'R-20260508-009', date:'5/8',  face:'M-N3', wait:370, judge:'go',   result:'ok', photo:'../images/IMG-04.png', temp:22, hum:68, voice:'日が回ってきた。触っても指に付かない。行く' },
+  { id:'R-20260506-006', date:'5/6',  face:'M-E1', wait:420, judge:'wait', result:'ok', photo:'../images/IMG-04.png', temp:20, hum:72, voice:'まだ少し冷たい。1時間見る' },
+  { id:'R-20260504-008', date:'5/4',  face:'M-W2', wait:440, judge:'wait', result:'ok', photo:'../images/IMG-04.png', temp:21, hum:71, voice:'西は午後から影。もう少し置く' },
+  { id:'R-20260501-005', date:'5/1',  face:'M-N2', wait:450, judge:'wait', result:'ok', photo:'../images/IMG-04.png', temp:20, hum:74, voice:'北はまだ冷たい。触ると指に色が残る' },
+  { id:'R-20260428-010', date:'4/28', face:'M-N1', wait:480, judge:'wait', result:'ok', photo:'../images/IMG-05.png', temp:19, hum:75, voice:'1階の北は一日日が当たらない。夕方まで置く' },
+  { id:'R-20260511-003', date:'5/11', face:'M-N5', wait:540, judge:'wait', result:'ok', photo:'../images/IMG-05.png', temp:21, hum:69, voice:'上の階でも北は遅い。今日のうちに塗る' },
+  { id:'R-20260509-011', date:'5/9',  face:'M-N4', wait:570, judge:'wait', result:'ok', photo:'../images/IMG-04.png', temp:22, hum:68, voice:'数字は同じでも、北の影が残ってる。指で触るとまだ取れる' },
+  { id:'R-20260425-011', date:'4/25', face:'M-W3', wait:340, judge:'go',   result:'ok', photo:'../images/IMG-03.png', temp:21, hum:70, voice:'西は触って大丈夫だった' }
+];
+
+/* 1段目：ベテランが北面3階で残すもの */
+var VET = {
+  id:'R-20260514-013', date:'5/14', face:'M-N3', wait:500, judge:'', result:'ok',
+  photo:'../images/IMG-04.png', temp:22, hum:67,
+  voice:'今日の北は影が早い。指で触ると少し残る。8時間は見る', vet:true
+};
+
+/* 2段目：若手が扱う面 */
+var NOW = {
+  id:'R-20260514-014', face:'M-S2', proc:'中塗り → 上塗り',
+  temp:22, hum:68, subst:26, elapsed:'4:20',
+  voice:'まだ指で触ると少し取れる。あと2時間見る'
+};
+
+/* 状態 */
+var vetShot=false, vetVoice=false;
+var yShot=false, ansTouch='', ansSun='', yVoice=false, judged='';
+var stage=0;
+
+/* ---------- 共通 ---------- */
+function go(id){
+  document.querySelectorAll('.sc').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById('sc-'+id).classList.add('on');
+  document.getElementById('hd').hidden = (id==='entry');
+  window.scrollTo(0,0);
+  if(id==='entry') reset();
+}
+function setWho(k, title, sub){
+  who=k; var p=PEOPLE[k];
+  document.getElementById('whoI').textContent=p.i;
+  document.getElementById('whoN').innerHTML=p.name+'<span>'+p.role+'</span>';
+  document.getElementById('hdTtl').innerHTML=title+'<small>'+sub+'</small>';
+}
+function reset(){
+  SEEDED=false; OFFICE={done:128,pending:6}; KNOW={all:128,north:34,rework:6};
+  RECORDS=RECORDS.filter(function(r){ return r.id!==VET.id && r.id!==NOW.id; });
+  VET.judge=''; vetShot=false; vetVoice=false;
+  yShot=false; ansTouch=''; ansSun=''; yVoice=false; judged=''; stage=0;
+  document.getElementById('sd1').innerHTML='0<em>件</em>';
+  document.getElementById('sd2').innerHTML='0<em>件</em>';
+  document.getElementById('sd3').innerHTML='0<em>件</em>';
+  document.getElementById('seedBtn').disabled=false;
+  document.getElementById('seedBtn').textContent='投入する';
+}
+function micSvg(){ return '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'; }
+function hm(min){ var h=Math.floor(min/60), m=min%60; return h+':'+(m<10?'0':'')+m; }
+
+/* ---------- 0. ナレッジ投入 ---------- */
+function doSeed(){
+  var b=document.getElementById('seedBtn');
+  b.disabled=true; b.textContent='入れています';
+  setWho('vet','ナレッジの投入','仮のデータを入れます');
+  countUp('sd1',KNOW.all); countUp('sd2',KNOW.north);
+  countUp('sd3',KNOW.rework,function(){
+    SEEDED=true;
+    b.textContent='入りました';
+    setTimeout(drawVet,520);
+  });
+}
+function countUp(id,to,cb){
+  var el=document.getElementById(id), n=0, step=Math.max(1,Math.round(to/26));
+  var t=setInterval(function(){
+    n+=step; if(n>=to){ n=to; clearInterval(t); if(cb) cb(); }
+    el.innerHTML=n+'<em>件</em>';
+  },26);
+}
+
+/* ---------- 1. ベテランが残す ---------- */
+function drawVet(){
+  setWho('vet','北面 3階','中塗り → 上塗り　前回から 8:20');
+  document.getElementById('sc-vet').innerHTML =
+    '<div class="card"><div class="metrics">'+
+      '<div><span>気温</span>22℃</div><div><span>湿度</span>67%</div>'+
+      '<div><span>素地</span>24℃</div><div><span>前回から</span>8:20</div>'+
+    '</div></div>'+
+    '<div style="margin-top:12px">'+
+      '<button class="shot" id="vShot" type="button" onclick="vetTake()"><span class="guide"></span><span class="lb">写真を撮る</span></button>'+
+    '</div>'+
+    '<div style="margin-top:10px"><button class="mic" id="vMic" type="button" onclick="vetSay()">'+micSvg()+'録音</button></div>'+
+    '<div id="vSaid"></div>'+
+    '<div class="pair" style="margin-top:12px">'+
+      '<button class="btn" id="vWait" type="button" disabled onclick="vetSave(\'wait\')">まだ塗れない</button>'+
+      '<button class="btn ghost" id="vGo" type="button" disabled onclick="vetSave(\'go\')">塗れる</button>'+
+    '</div>';
+  go('vet');
+}
+function vetTake(){
+  var s=document.getElementById('vShot');
+  if(s.classList.contains('has')) return;
+  s.insertAdjacentHTML('afterbegin','<img src="'+VET.photo+'" alt="">');
+  s.classList.add('has'); vetShot=true; vetReady();
+}
+function vetSay(){
+  var m=document.getElementById('vMic');
+  if(vetVoice) return;
+  m.classList.add('on'); m.innerHTML=micSvg()+'録音中';
+  setTimeout(function(){
+    m.classList.remove('on'); m.innerHTML=micSvg()+'録音';
+    document.getElementById('vSaid').innerHTML='<div class="said">'+VET.voice+'</div>';
+    vetVoice=true; vetReady();
+  },1100);
+}
+function vetReady(){
+  if(!vetShot) return;
+  document.getElementById('vWait').disabled=false;
+  document.getElementById('vGo').disabled=false;
+}
+function vetSave(j){
+  VET.judge=j;
+  RECORDS.unshift(VET);
+  OFFICE.pending+=1; KNOW.north+=1;
+  document.getElementById('sc-vet').innerHTML=
+    '<div class="stamp" style="margin-top:26px">田中さんの判断が入りました</div>'+
+    '<div class="card">'+
+      '<div class="slot"><div class="k">記録</div><div class="v">'+VET.id+'</div></div>'+
+      '<div class="slot"><div class="k">面</div><div class="v">北面 3階</div></div>'+
+      '<div class="slot"><div class="k">判断</div><div class="v">'+(j==='wait'?'まだ塗れない':'塗れる')+'</div></div>'+
+    '</div>'+
+    '<div style="margin-top:16px"><button class="btn" type="button" onclick="drawFaces()">岡崎さんの番</button></div>';
+  window.scrollTo(0,0);
+}
+
+/* ---------- 面一覧 ---------- */
+function drawFaces(){
+  setWho('young','みどりが丘ハイツ','外壁改修');
+  document.getElementById('sc-faces').innerHTML =
+    '<img class="banner" src="../images/IMG-07.png" alt="足場のかかった建物">'+
+    FACES.map(function(f){
+      var on = f.id==='M-S2';
+      return '<button class="face'+(on?'':' off')+'" type="button" '+(on?'onclick="drawRecord()"':'disabled')+'>'+
+        '<img src="'+f.thumb+'" alt=""><div><div class="fn">'+f.name+'</div>'+
+        '<div class="fp">'+f.proc+(f.last?'　'+f.last:'')+'</div></div>'+
+        '<span class="fid">'+f.id+'</span></button>';
+    }).join('');
+  go('faces');
+}
+
+/* ---------- 2. 若手が判断する ---------- */
+function nearCount(){
+  return RECORDS.filter(function(r){ return Math.abs(r.temp-NOW.temp)<=2 && Math.abs(r.hum-NOW.hum)<=6; }).length;
+}
+function filtered(){
+  if(!ansTouch||!ansSun) return [];
+  var list = RECORDS.filter(function(r){
+    var a = ansTouch==='stick' ? r.judge==='wait' : r.judge==='go';
+    var n = /^M-[NW]/.test(r.face);
+    var b = ansSun==='shade' ? n : !n;
+    return a && b;
+  });
+  list.sort(function(x,y){ return ansTouch==='stick' ? y.wait-x.wait : x.wait-y.wait; });
+  var vet = list.filter(function(r){ return r.vet; });
+  var rest = list.filter(function(r){ return !r.vet; });
+  return vet.concat(rest).slice(0,3);
+}
+function drawRecord(){
+  setWho('young','南面 2階','中塗り → 上塗り');
+  document.getElementById('sc-record').innerHTML =
+    '<div class="card">'+
+      '<div class="metrics">'+
+        '<div><span>気温</span>'+NOW.temp+'℃</div><div><span>湿度</span>'+NOW.hum+'%</div>'+
+        '<div><span>素地</span>'+NOW.subst+'℃</div><div><span>前回から</span>'+NOW.elapsed+'</div>'+
+      '</div>'+
+      '<div class="std">塗料の表示　3時間以上</div>'+
+    '</div>'+
+    '<div style="margin-top:12px">'+
+      '<button class="shot" id="yShot" type="button" onclick="yTake()"><span class="guide"></span><span class="lb">写真を撮る</span></button>'+
+    '</div>'+
+    '<div id="qzone"></div>'+
+    '<div id="hzone"></div>'+
+    '<div id="vzone"></div>'+
+    '<div class="pair" style="margin-top:14px">'+
+      '<button class="btn" id="yWait" type="button" disabled onclick="ySave(\'wait\')">まだ塗れない</button>'+
+      '<button class="btn ghost" id="yGo" type="button" disabled onclick="ySave(\'go\')">塗れる</button>'+
+    '</div>';
+  go('record');
+}
+function yTake(){
+  var s=document.getElementById('yShot');
+  if(s.classList.contains('has')) return;
+  s.insertAdjacentHTML('afterbegin','<img src="../images/IMG-03.png" alt="">');
+  s.classList.add('has'); yShot=true; drawQ();
+}
+function drawQ(){
+  document.getElementById('qzone').innerHTML =
+    '<div class="sec">確認</div>'+
+    '<div class="card q">'+
+      '<h3>指で触ると、色が指に付きますか</h3>'+
+      '<p class="src">5/9 M-N4 の記録から</p>'+
+      '<div class="pair">'+
+        '<button class="opt'+(ansTouch==='stick'?' sel':'')+'" type="button" onclick="setA(\'touch\',\'stick\')">少し付く</button>'+
+        '<button class="opt'+(ansTouch==='clean'?' sel':'')+'" type="button" onclick="setA(\'touch\',\'clean\')">付かない</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="card q">'+
+      '<h3>この面に、いま日は当たっていますか</h3>'+
+      '<p class="src">北面の記録 '+KNOW.north+'件から</p>'+
+      '<div class="pair">'+
+        '<button class="opt'+(ansSun==='sun'?' sel':'')+'" type="button" onclick="setA(\'sun\',\'sun\')">当たっている</button>'+
+        '<button class="opt'+(ansSun==='shade'?' sel':'')+'" type="button" onclick="setA(\'sun\',\'shade\')">日陰</button>'+
+      '</div>'+
+    '</div>';
+}
+function setA(k,v){
+  if(k==='touch') ansTouch=v; else ansSun=v;
+  drawQ(); drawHistory();
+}
+function drawHistory(){
+  var z=document.getElementById('hzone');
+  if(!ansTouch||!ansSun){
+    z.innerHTML='<div class="sec">近い条件の記録</div>'+
+      '<div class="card"><div class="hcount"><b>'+nearCount()+'</b><span style="font-size:12px;color:var(--sub)">件</span></div>'+
+      '<div class="hnote" style="margin:0">2つに答えると絞られます</div></div>';
+    return;
+  }
+  var list=filtered();
+  var allLong=list.every(function(r){ return r.wait>=360; });
+  var hasRw=list.some(function(r){ return r.result==='rework'; });
+  z.innerHTML='<div class="sec">近い条件の記録</div>'+
+    '<div class="hcount"><b>'+list.length+'</b><span style="font-size:12px;color:var(--sub)">件　'+nearCount()+'件から絞りました</span></div>'+
+    (allLong?'<div class="hnote">いずれも6時間以上あけています</div>':'')+
+    (hasRw?'<div class="hnote">うち1件は手直しになっています</div>':'')+
+    list.map(function(r){
+      return '<article class="hc'+(r.vet?' today':'')+'"><img src="'+r.photo+'" alt="">'+
+        '<div class="b"><div class="m">'+r.date+'　'+r.face+'　'+r.temp+'℃・'+r.hum+'%</div>'+
+        '<div class="d '+r.judge+'">'+hm(r.wait)+' で'+(r.judge==='wait'?'待った':'塗った')+'</div>'+
+        '<p>'+r.voice+'</p>'+
+        (r.result==='rework'?'<span class="rw">手直しになった</span>':'')+
+        '</div></article>';
+    }).join('');
+  document.getElementById('vzone').innerHTML=
+    '<div style="margin-top:12px"><button class="mic" id="yMic" type="button" onclick="ySay()">'+micSvg()+'録音</button></div><div id="ySaid"></div>';
+  document.getElementById('yWait').disabled=false;
+  document.getElementById('yGo').disabled=false;
+}
+function ySay(){
+  var m=document.getElementById('yMic');
+  if(yVoice) return;
+  m.classList.add('on'); m.innerHTML=micSvg()+'録音中';
+  setTimeout(function(){
+    m.classList.remove('on'); m.innerHTML=micSvg()+'録音';
+    document.getElementById('ySaid').innerHTML='<div class="said">'+NOW.voice+'</div>';
+    yVoice=true;
+  },1100);
+}
+function ySave(j){
+  judged=j; stage=1; drawDone(); go('done');
+}
+
+/* ---------- 3. 結果が返る ---------- */
+var COMA=[
+  { t:'15:20', sub:'前回から 4:20', photo:'../images/IMG-03.png' },
+  { t:'17:30', sub:'前回から 6:30', photo:'../images/IMG-04.png' },
+  { t:'翌朝 08:10', sub:'5月15日', photo:'../images/IMG-05.png' }
+];
+function drawDone(){
+  var c=COMA[stage-1];
+  var label=judged==='wait'?'まだ塗れない':'塗れる';
+  var actual= stage>=2 ? '17:30に上塗りを始めた' : '';
+  var result= stage>=3 ? '剥がれなし' : '';
+  var head= stage===1?'判断を残しました': stage===2?'時間がたちました':'結果が入りました';
+  var next= stage===1?'17:30の状態を見る': stage===2?'翌朝の結果を見る':'西村さんの番';
+  var act=  stage<3 ? 'advance()' : 'drawOffice()';
+  document.getElementById('sc-done').innerHTML=
+    '<div class="stamp">'+head+'</div>'+
+    '<div class="clock">'+c.t+'<small>'+c.sub+'</small></div>'+
+    '<img class="dphoto" src="'+c.photo+'" alt="南面2階の塗った面">'+
+    '<div class="card">'+
+      '<div class="slot"><div class="k">記録</div><div class="v">'+NOW.id+'</div></div>'+
+      '<div class="slot"><div class="k">確認</div><div class="v">'+(ansTouch==='stick'?'指に少し付く':'指に付かない')+'　'+(ansSun==='shade'?'日陰':'日が当たる')+'</div></div>'+
+      '<div class="slot"><div class="k">判断</div><div class="v">'+label+'</div></div>'+
+      '<div class="slot"><div class="k">実際</div><div class="v'+(actual?'':' empty')+'">'+(actual||'まだ')+'</div></div>'+
+      '<div class="slot"><div class="k">結果</div><div class="v'+(result?'':' empty')+'">'+(result||'翌朝に入ります')+'</div></div>'+
+    '</div>'+
+    '<div style="margin-top:16px"><button class="btn" type="button" onclick="'+act+'">'+next+'</button></div>';
+  window.scrollTo(0,0);
+}
+function advance(){
+  stage=Math.min(3,stage+1);
+  if(stage===3){
+    OFFICE.done+=1; OFFICE.pending=Math.max(0,OFFICE.pending-1);
+    if(!RECORDS.some(function(r){return r.id===NOW.id;})){
+      RECORDS.unshift({ id:NOW.id, date:'5/14', face:NOW.face, wait:390, judge:judged, result:'ok',
+        photo:'../images/IMG-05.png', temp:NOW.temp, hum:NOW.hum, voice:NOW.voice });
+    }
+  }
+  drawDone();
+}
+
+/* ---------- 4. 経営が見る ---------- */
+function drawOffice(){
+  setWho('office','みどりが丘ハイツ','溜まった記録');
+  var today=RECORDS.filter(function(r){ return r.date==='5/14'; });
+  document.getElementById('sc-office').innerHTML=
+    '<div class="kpi">'+
+      '<div class="c"><b>'+OFFICE.done+'</b><span>結果あり</span></div>'+
+      '<div class="c"><b>'+OFFICE.pending+'</b><span>結果待ち</span></div>'+
+    '</div>'+
+    '<div class="sec">今日入った記録</div>'+
+    today.map(function(r){
+      return '<article class="hc"><img src="'+r.photo+'" alt="">'+
+        '<div class="b"><div class="m">'+r.date+'　'+r.face+'　'+r.id+'</div>'+
+        '<div class="d '+r.judge+'">'+hm(r.wait)+' で'+(r.judge==='wait'?'待った':'塗った')+'</div>'+
+        '<p>'+r.voice+'</p></div></article>';
+    }).join('')+
+    '<div class="sec">面ごとの乾燥時間</div>'+
+    '<div class="card bar">'+
+      brow('南',BARS.S,false)+brow('東',BARS.E,false)+brow('北',BARS.N,true)+brow('西',BARS.W,false)+
+    '</div>'+
+    '<div class="sec">溜まって分かったこと</div>'+
+    '<div class="card">'+
+      '<div class="kn">K-P7　西村（工務）　5/20</div>'+
+      '<div class="kb">この時期の北面は乾きが遅い。工程を組むときに北面を先に回すと、足場が1日縮む</div>'+
+      '<div class="kg">北面 '+KNOW.north+'件<br>乾燥時間の中央値 7:30（他の面 5:30）</div>'+
+    '</div>'+
+    '<div style="margin-top:18px"><button class="btn ghost" type="button" onclick="go(\'entry\')">最初に戻る</button></div>';
+  go('office');
+}
+function brow(n,v,hi){
+  var w=Math.round(v/7.5*100);
+  return '<div class="r'+(hi?' hi':'')+'"><i>'+n+'</i><div class="t"><u style="width:'+w+'%"></u></div><em>'+v.toFixed(1)+'</em></div>';
+}
+</script>
+</body>
+</html>

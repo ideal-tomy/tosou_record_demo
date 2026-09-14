@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<!-- 試作。現行の劇場はリポジトリ直下で npm run dev -->
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light">
+<title>塗り重ね記録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light only;
+  --bg:#DEE3E7; --pane:#EEF0F2; --card:#FFFFFF; --ink:#14181A; --sub:#5B635F; --faint:#9AA0A4;
+  --line:#DDE1E4; --deep:#1B3A5C; --warn:#B8861B; --warn-bg:#F6EBCF; --W:340px; --G:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%; touch-action:manipulation;}
+button,a,.opt,.mic,.shot,.btn,input,select,textarea{touch-action:manipulation; font-size:16px;}
+body{background:var(--bg); color:var(--ink); font-family:"Noto Sans JP","Noto Sans CJK JP","Hiragino Sans",sans-serif; line-height:1.75; min-height:100dvh; display:flex; flex-direction:column;}
+h1,h2,h3,p,div,span{word-break:auto-phrase; line-break:strict;}
+h1,h2,h3{text-wrap:balance;}
+
+/* 入口 */
+.cover{position:fixed; inset:0; z-index:50; background:var(--bg); display:flex; flex-direction:column; overflow-y:auto; padding:20px 20px 24px; transition:opacity .4s;}
+.cover.off{opacity:0; pointer-events:none;}
+.cbox{width:100%; max-width:360px; margin:auto;}
+.cover-hero{width:100%; height:auto; max-height:min(160px,22dvh); object-fit:contain; object-position:center; display:block; border-radius:14px; margin:0 auto 12px;}
+.cbox h1{font-size:30px; font-weight:900; letter-spacing:-.02em; line-height:1.3;}
+.cbox .s{font-size:15px; color:var(--sub); margin-top:6px;}
+.peek{margin:14px 0 16px; border-radius:14px; border:7px solid #0F1417; background:var(--pane); padding:10px; pointer-events:none;}
+.peek .t{font-size:11px; font-weight:700;}
+.peek .r{display:flex; gap:6px; margin:8px 0 0; font-size:10px; color:var(--sub);}
+.peek .r span{background:#fff; border-radius:6px; padding:5px 7px;}
+.peek img{width:100%; height:64px; object-fit:cover; display:block; border-radius:8px; margin-top:8px;}
+.cfoot{font-size:12px; color:var(--sub); text-align:center; margin-top:14px;}
+@media (max-height:700px){
+  .cover-hero{max-height:min(120px,18dvh);}
+  .peek img{height:48px;}
+  .cbox h1{font-size:26px;}
+}
+
+/* ステージ：PCは左=履歴（細）／中=操作／右=影響（広） */
+.stage{flex:1; overflow:hidden; display:flex; align-items:flex-start; padding:28px 0 20px;}
+.track{display:flex; gap:var(--G); padding-left:0; align-items:flex-start; transition:transform .5s cubic-bezier(.32,.72,.3,1);}
+.col{width:var(--W); flex:none; transition:opacity .45s;}
+.col.hist{opacity:.22; overflow:hidden; pointer-events:none;}
+.col.act{opacity:1;}
+.col.fx{opacity:1;}
+.col.act .pane{box-shadow:0 0 0 1px rgba(27,58,92,.12);}
+.col.fx .pane{min-height:calc(100dvh - 120px);}
+
+.pane{background:var(--pane); border-radius:16px; padding:16px; min-height:0; max-height:calc(100dvh - 88px); overflow-y:auto;}
+.pane.seed{background:#EEF0F2;}
+.pane.know{background:#E8ECEF;}
+.pane.field{background:#E6E2DA;}
+.pane.time{background:#E3E7EE;}
+.pane.office{background:#E4EBE6;}
+.pane.know .who i{background:#5B635F;}
+.pane.field .who i{background:#3D4A3C;}
+.pane.time .who i{background:#1B3A5C;}
+.pane.office .who i{background:#2C4A46;}
+.pane.time .clock{margin:4px 0 8px;}
+.who{display:flex; align-items:center; gap:8px; margin-bottom:13px;}
+.who i{width:26px; height:26px; border-radius:50%; background:var(--deep); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; font-style:normal; flex:none;}
+.who b{font-size:14px;}
+.who b span{font-weight:400; font-size:12px; color:var(--sub); margin-left:5px;}
+.who em{margin-left:auto; font-style:normal; font-size:11px; color:var(--faint); text-align:right; flex:none;}
+
+.card{background:var(--card); border-radius:12px; padding:14px;}
+.card + .card{margin-top:10px;}
+.lbl{font-size:12px; color:var(--sub); margin:14px 2px 8px;}
+.note{font-size:12px; color:var(--sub); background:#E3E8EC; border-radius:10px; padding:11px 12px; margin-bottom:12px; line-height:1.7;}
+
+.metrics{display:flex; flex-wrap:wrap; gap:3px 14px; font-size:14px; font-weight:700;}
+.metrics span{color:var(--sub); font-weight:400; font-size:12px; margin-right:2px;}
+.std{font-size:12px; color:var(--sub); margin-top:9px; padding-top:9px; border-top:1px solid var(--line);}
+
+.row{display:flex; justify-content:space-between; align-items:baseline; padding:11px 0; border-bottom:1px solid var(--line);}
+.row:last-child{border-bottom:0;}
+.row .k{font-size:13px;}
+.row .v{font-size:24px; font-weight:900; font-variant-numeric:tabular-nums;}
+.row .v em{font-size:12px; font-weight:400; font-style:normal; color:var(--sub); margin-left:3px;}
+@keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.15)}100%{transform:scale(1)}}
+.pop{animation:pop .42s ease; color:var(--deep);}
+
+.shot{position:relative; width:100%; border:0; padding:0; margin-top:10px; border-radius:12px; overflow:hidden; background:#1A222C url("../images/IMG-14.png") center/cover no-repeat; aspect-ratio:4/3; display:block; cursor:pointer; font-family:inherit;}
+.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:0; transition:opacity .35s; background:#1A222C;}
+.shot.has{aspect-ratio:auto; background:#1A222C;}
+.shot.has img{position:static; width:100%; height:auto; opacity:1; display:block; object-fit:contain;}
+.shot .g{position:absolute; inset:13%; border:2px dashed rgba(255,255,255,.7); border-radius:6px; z-index:1;}
+.shot .lb{position:absolute; inset:0; display:grid; place-items:center; z-index:1; color:#fff; font-size:16px; font-weight:700; text-shadow:0 1px 4px rgba(0,0,0,.55);}
+.shot.has .g,.shot.has .lb{display:none;}
+
+.mic{width:100%; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px; font-family:inherit; font-size:16px; font-weight:700; color:var(--ink); cursor:pointer;}
+.mic.on{background:var(--deep); color:#fff; border-color:var(--deep);}
+.mic svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round;}
+.said{background:var(--card); border-radius:12px; padding:12px 13px; font-size:13px; margin-top:8px;}
+
+.pair{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+.btn{width:100%; border:0; border-radius:12px; padding:16px 10px; font-family:inherit; font-size:16px; font-weight:700; background:var(--deep); color:#fff; cursor:pointer;}
+.btn.ghost{background:var(--card); color:var(--ink); border:1px solid var(--line);}
+.btn:disabled{background:#D2D7DB; color:#9AA0A4; cursor:default;}
+.opt{border:1px solid var(--line); background:var(--card); border-radius:10px; padding:12px 6px; font-family:inherit; font-size:16px; font-weight:700; color:var(--ink); cursor:pointer;}
+.opt.sel{background:var(--deep); color:#fff; border-color:var(--deep);}
+.q h3{font-size:15px; font-weight:700;}
+.q .src{font-size:12px; color:var(--faint); margin:2px 0 10px;}
+
+/* 記録カード */
+.hc{display:flex; gap:10px; background:var(--card); border-radius:12px; overflow:hidden;}
+.hc + .hc{margin-top:8px;}
+.banner{width:100%; height:auto; display:block; border-radius:10px; margin-bottom:12px;}
+.faces{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px;}
+.face{border-radius:8px; overflow:hidden; background:var(--card); opacity:.42;}
+.face.on{opacity:1; outline:2px solid var(--deep); outline-offset:-2px;}
+.face img{width:100%; height:auto; display:block;}
+.face span{display:block; font-size:11px; font-weight:700; text-align:center; padding:3px 0 5px;}
+.strip{display:grid; grid-template-columns:repeat(5,1fr); gap:5px; margin-top:8px;}
+.strip figure{margin:0;}
+.strip img{width:100%; height:auto; display:block; border-radius:6px; opacity:.55;}
+.strip .on img{opacity:1; outline:2px solid var(--deep); outline-offset:-2px; border-radius:6px;}
+.strip figcaption{font-size:10px; color:var(--sub); text-align:center; margin-top:3px;}
+.srcimg{width:100%; height:auto; display:block; border-radius:8px; margin-top:10px;}
+.dphoto{width:100%; height:auto; display:block; border-radius:12px; margin:12px 0;}
+.hc img{width:78px; height:auto; object-fit:contain; flex:none; align-self:flex-start; background:#EEF0F2;}
+.hc .b{padding:10px 12px 11px 0; min-width:0;}
+.hc .m{font-size:11px; color:var(--faint);}
+.hc .d{font-size:15px; font-weight:700; margin:1px 0 3px; color:var(--deep);}
+.hc .d.go{color:var(--warn);}
+.hc p{font-size:12px; color:var(--sub); line-height:1.7;}
+.hc p.one{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.hc .rw{display:inline-block; font-size:11px; font-weight:700; color:var(--warn); background:var(--warn-bg); border-radius:5px; padding:1px 7px; margin-top:4px;}
+.hc.today{outline:2px solid var(--deep); outline-offset:-2px;}
+.hc.fade{opacity:0; transition:opacity .35s;}
+.ph{border:1px dashed var(--line); border-radius:12px; padding:18px 14px; text-align:center; font-size:13px; color:var(--faint);}
+.scroll{max-height:360px; overflow-y:auto;}
+
+.clock{text-align:center; font-size:30px; font-weight:900; font-variant-numeric:tabular-nums;}
+.clock small{display:block; font-size:12px; font-weight:400; color:var(--sub);}
+.slot{display:grid; grid-template-columns:56px 1fr; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); align-items:baseline;}
+.slot:last-child{border-bottom:0;}
+.slot .k{font-size:12px; color:var(--sub);}
+.slot .v{font-size:14px; font-weight:700;}
+.slot .v.empty{font-weight:400; color:var(--faint);}
+
+.bar .r{display:flex; align-items:center; gap:10px; margin-bottom:9px;}
+.bar .r:last-child{margin-bottom:0;}
+.bar .r i{font-style:normal; font-size:13px; width:24px; flex:none;}
+.bar .t{flex:1; height:13px; background:#E2E6E9; border-radius:7px; overflow:hidden;}
+.bar .t u{display:block; height:100%; background:#93A3B2; border-radius:7px; transition:width .6s;}
+.bar .r.hi u{background:var(--deep);}
+.bar .r.hi i,.bar .r.hi em{font-weight:700;}
+.bar .r em{font-style:normal; font-size:13px; color:var(--sub); width:32px; text-align:right; font-variant-numeric:tabular-nums;}
+.kn{font-size:12px; color:var(--faint);}
+.kb{font-size:14px; font-weight:700; line-height:1.7; margin:4px 0 9px;}
+.kg{background:#EEF1F3; border-radius:9px; padding:10px 12px; font-size:12px; color:var(--sub); line-height:1.8;}
+
+.foot{padding:12px 20px 20px; display:flex; justify-content:center; gap:10px;}
+.foot button{background:none; border:1px solid #C8CED3; border-radius:999px; padding:8px 16px; font-family:inherit; font-size:13px; color:var(--sub); cursor:pointer;}
+
+@media (max-width:900px){
+  .stage{overflow:visible; padding:14px 0; align-items:stretch;}
+  .track{display:block; padding:0 14px; transform:none !important;}
+  .col,.col.act,.col.fx,.col.hist{width:auto !important; margin-bottom:12px; opacity:1; pointer-events:auto; overflow:visible;}
+  .col.act .pane{box-shadow:none;}
+  .col.fx .pane{min-height:0;}
+  .pane{min-height:0; max-height:none; overflow:visible;}
+  .scroll{max-height:none;}
+  .pane.field .pair, .pane.time #tAct, .pane.seed .btn, .pane.office .pair{
+    position:sticky; bottom:0; z-index:4;
+    margin-left:-16px; margin-right:-16px;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .pane.field .pair{background:linear-gradient(to bottom, transparent, #E6E2DA 10px);}
+  .pane.time #tAct{background:linear-gradient(to bottom, transparent, #E3E7EE 10px);}
+  .pane.seed .btn{width:calc(100% - 0px); background:#1B3A5C;}
+  .pane.office .pair{background:linear-gradient(to bottom, transparent, #E4EBE6 10px);}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important;}}
+
+@media (prefers-color-scheme:dark){
+  html,body,.cover{background:#DEE3E7 !important; color:#14181A !important;}
+  .pane,.peek{background:#EEF0F2 !important;}
+  .card,.mic,.said,.hc,.btn.ghost,.opt,.peek .r span{background:#FFFFFF !important; color:#14181A !important;}
+  .cbox h1,.who b,.row .v,.hc .d,.kb,.clock,.slot .v,.metrics,.q h3{color:#14181A !important;}
+  .cbox .s,.cfoot,.who b span,.lbl,.row .k,.hc p,.kg,.slot .k,.std,.note,.said,.metrics span,.bar .r em,.peek .r{color:#5B635F !important;}
+  .who em,.hc .m,.q .src,.ph,.kn,.slot .v.empty{color:#9AA0A4 !important;}
+  .btn,.mic.on,.who i,.opt.sel{background:#1B3A5C !important; color:#FFFFFF !important;}
+  .btn:disabled{background:#D2D7DB !important; color:#9AA0A4 !important;}
+  .hc .d,.pop{color:#1B3A5C !important;}
+  .hc .d.go{color:#B8861B !important;}
+  .hc .rw{background:#F6EBCF !important; color:#B8861B !important;}
+  .note{background:#E3E8EC !important;}
+  .kg{background:#EEF1F3 !important;}
+  .bar .t{background:#E2E6E9 !important;}
+  .bar .t u{background:#93A3B2 !important;}
+  .bar .r.hi u{background:#1B3A5C !important;}
+  .card,.row,.mic,.ph,.btn.ghost,.opt,.slot,.std{border-color:#DDE1E4 !important;}
+  .foot button{border-color:#C8CED3 !important; color:#5B635F !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="cover" id="cover">
+  <div class="cbox">
+    <img class="cover-hero" src="../images/IMG-15.png" alt="足場の上で塗った面を確認している職人">
+    <h1>塗り重ね記録</h1>
+    <p class="s">乾き具合の判断を残して、次の現場で使う</p>
+    <div class="peek" aria-hidden="true">
+      <div class="t">南面 2階 <span style="font-weight:400;color:#5B635F">中塗り → 上塗り</span></div>
+      <div class="r"><span>22℃</span><span>68%</span><span>素地 26℃</span><span>4:20</span></div>
+      <img src="../images/IMG-03.png" alt="">
+    </div>
+    <button class="btn" type="button" onclick="start()">はじめる</button>
+    <p class="cfoot">北野塗装工業 ／ みどりが丘ハイツ 外壁改修</p>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="track" id="track">
+    <div class="col" id="c0"></div>
+    <div class="col" id="c1"></div>
+    <div class="col" id="c2"></div>
+    <div class="col" id="c3"></div>
+    <div class="col" id="c4"></div>
+    <div class="col" id="c5"></div>
+    <div class="col" id="c6"></div>
+    <div class="col" id="c7"></div>
+    <div class="col" id="c8"></div>
+    <div class="col" id="c9"></div>
+  </div>
+</div>
+
+<div class="foot">
+  <button type="button" onclick="location.reload()">最初から</button>
+</div>
+
+<script>
+var WA=336, WE=428, WH=176, G=28, cur=0;
+var KNOW={all:0,north:0,rework:0};
+var OFFICE={done:0,pending:0};
+var BARS={S:5.5,E:5.5,N:7.4,W:5.5};
+
+var RECORDS=[
+ {id:'R-20260418-003',date:'4/18',face:'M-S1',wait:260,judge:'go',result:'rework',photo:'../images/IMG-06.png',temp:23,hum:62,voice:'触った感じは大丈夫。進める'},
+ {id:'R-20260421-007',date:'4/21',face:'M-E2',wait:310,judge:'go',result:'ok',photo:'../images/IMG-03.png',temp:24,hum:60,voice:'東はもう乾いてる。行く'},
+ {id:'R-20260425-011',date:'4/25',face:'M-W3',wait:340,judge:'go',result:'ok',photo:'../images/IMG-03.png',temp:21,hum:70,voice:'西は触って大丈夫だった'},
+ {id:'R-20260508-009',date:'5/8', face:'M-N3',wait:370,judge:'go',result:'ok',photo:'../images/IMG-04.png',temp:22,hum:68,voice:'日が回ってきた。触っても指に付かない。行く'},
+ {id:'R-20260502-004',date:'5/2', face:'M-S3',wait:390,judge:'go',result:'ok',photo:'../images/IMG-04.png',temp:22,hum:65,voice:'南はもう均一。30分見てから塗った'},
+ {id:'R-20260510-012',date:'5/10',face:'M-S4',wait:420,judge:'go',result:'ok',photo:'../images/IMG-04.png',temp:23,hum:64,voice:'4階は乾きがいい。このくらいで揃う'},
+ {id:'R-20260506-006',date:'5/6', face:'M-E1',wait:420,judge:'wait',result:'ok',photo:'../images/IMG-04.png',temp:20,hum:72,voice:'まだ少し冷たい。1時間見る'},
+ {id:'R-20260504-008',date:'5/4', face:'M-W2',wait:440,judge:'wait',result:'ok',photo:'../images/IMG-04.png',temp:21,hum:71,voice:'西は午後から影。もう少し置く'},
+ {id:'R-20260501-005',date:'5/1', face:'M-N2',wait:450,judge:'wait',result:'ok',photo:'../images/IMG-04.png',temp:20,hum:74,voice:'北はまだ冷たい。触ると指に色が残る'},
+ {id:'R-20260428-010',date:'4/28',face:'M-N1',wait:480,judge:'wait',result:'ok',photo:'../images/IMG-05.png',temp:19,hum:75,voice:'1階の北は一日日が当たらない。夕方まで置く'},
+ {id:'R-20260511-003',date:'5/11',face:'M-N5',wait:540,judge:'wait',result:'ok',photo:'../images/IMG-05.png',temp:21,hum:69,voice:'上の階でも北は遅い。今日のうちに塗る'},
+ {id:'R-20260509-011',date:'5/9', face:'M-N4',wait:570,judge:'wait',result:'ok',photo:'../images/IMG-04.png',temp:22,hum:68,voice:'数字は同じでも、北の影が残ってる。指で触るとまだ取れる'}
+];
+var VET={id:'R-20260514-013',date:'5/14',face:'M-N3',wait:500,judge:'',result:'ok',photo:'../images/IMG-04.png',temp:22,hum:67,voice:'今日の北は影が早い。指で触ると少し残る。8時間は見る',vet:true};
+var NOW={id:'R-20260514-014',face:'M-S2',temp:22,hum:68,subst:26,elapsed:'4:20',voice:'まだ指で触ると少し取れる。あと2時間見る'};
+var FACES=[
+  {id:'M-S2',name:'南',thumb:'../images/IMG-08.png'},
+  {id:'M-E1',name:'東',thumb:'../images/IMG-09.png'},
+  {id:'M-N3',name:'北',thumb:'../images/IMG-10.png'},
+  {id:'M-W4',name:'西',thumb:'../images/IMG-11.png'}
+];
+function faceRow(sel){
+  return '<div class="faces">'+FACES.map(function(f){
+    return '<div class="face'+(f.id===sel?' on':'')+'"><img src="'+f.thumb+'" alt=""><span>'+f.name+'</span></div>';
+  }).join('')+'</div>';
+}
+function dryStrip(hi){
+  var labs=['直後','2時間','4時間','6時間','翌朝'];
+  return '<div class="strip">'+[1,2,3,4,5].map(function(n){
+    return '<figure'+(n===hi?' class="on"':'')+'><img src="../images/IMG-0'+n+'.png" alt=""><figcaption>'+labs[n-1]+'</figcaption></figure>';
+  }).join('')+'</div>';
+}
+
+var vShot=false,vVoice=false,vJudge='';
+var yShot=false,aTouch='',aSun='',yVoice=false,yJudge='';
+var coma=0, newRec=null, vetted='', eveJudge='', actLine='', resLine='';
+
+function mi(){return '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';}
+function hm(m){var h=Math.floor(m/60),n=m%60;return h+':'+(n<10?'0':'')+n;}
+function el(id){return document.getElementById(id);}
+function pop(node){ if(!node) return; node.classList.remove('pop'); void node.offsetWidth; node.classList.add('pop'); }
+function near(){ return RECORDS.filter(function(r){return Math.abs(r.temp-NOW.temp)<=2 && Math.abs(r.hum-NOW.hum)<=6;}).length; }
+
+function isPhone(){ return window.innerWidth<=900; }
+function colW(k){
+  if(k===cur) return WA;
+  if(k===cur+1) return WE;
+  return WH;
+}
+function slide(i){
+  cur=i;
+  for(var k=0;k<10;k++){
+    var c=el('c'+k);
+    c.classList.remove('hist','act','fx','dim');
+    if(k===i) c.classList.add('act');
+    else if(k===i+1) c.classList.add('fx');
+    else { c.classList.add('hist','dim'); }
+    if(!isPhone()) c.style.width=colW(k)+'px';
+    else c.style.width='';
+  }
+  if(isPhone()){
+    el('track').style.transform='none';
+    var n=el('c'+i);
+    if(n){
+      var top=n.getBoundingClientRect().top + window.pageYOffset - 8;
+      window.scrollTo(0, Math.max(0, top));
+    }
+    return;
+  }
+  var x=0;
+  for(var k=0;k<i;k++) x+=colW(k)+G;
+  var sliver = i>0 ? 120 : 48;
+  el('track').style.transform='translateX('+(sliver-x)+'px)';
+}
+function look(_i){}
+function showEffect(_i){}
+
+document.addEventListener('click', function(e){
+  var t=e.target.closest('button');
+  if(t) setTimeout(function(){ t.blur(); }, 0);
+}, true);
+window.addEventListener('resize', function(){ slide(cur); });
+
+function start(){
+  el('cover').classList.add('off');
+  setTimeout(function(){ el('cover').style.display='none'; },420);
+  slide(0);
+}
+
+/* ========== 0段 ナレッジを入れる ========== */
+function build0(){
+  el('c0').innerHTML='<div class="pane seed">'+
+    '<div class="who"><i>設</i><b>ナレッジの投入</b></div>'+
+    '<img class="banner" src="../images/IMG-07.png" alt="足場のかかったみどりが丘ハイツ">'+
+    '<p class="note">実際はここに御社の記録が入ります。この先は、仮のナレッジを入れた状態でご覧ください。</p>'+
+    '<div class="card">'+
+      '<div class="row"><span class="k">ベテランの判断</span><span class="v">128<em>件</em></span></div>'+
+      '<div class="row"><span class="k">うち 北面の記録</span><span class="v">34<em>件</em></span></div>'+
+      '<div class="row"><span class="k">うち 手直しになった記録</span><span class="v">6<em>件</em></span></div>'+
+    '</div>'+
+    '<div style="margin-top:14px"><button class="btn" id="seedB" type="button" onclick="seed()">投入する</button></div>'+
+  '</div>';
+  drawKnow(1);
+}
+function drawKnow(id){
+  el('c'+id).innerHTML='<div class="pane know">'+
+    '<div class="who"><i>蓄</i><b>ナレッジ<span>いまの状態</span></b></div>'+
+    '<div class="card">'+
+      '<div class="row"><span class="k">ベテランの判断</span><span class="v" id="k'+id+'a">'+KNOW.all+'<em>件</em></span></div>'+
+      '<div class="row"><span class="k">うち 北面の記録</span><span class="v" id="k'+id+'b">'+KNOW.north+'<em>件</em></span></div>'+
+      '<div class="row"><span class="k">うち 手直し</span><span class="v" id="k'+id+'c">'+KNOW.rework+'<em>件</em></span></div>'+
+      '<div class="row"><span class="k">結果待ち</span><span class="v" id="k'+id+'d">'+OFFICE.pending+'<em>件</em></span></div>'+
+    '</div>'+
+    '<p class="lbl">今日 入った記録</p><div id="new'+id+'"><div class="ph">まだありません</div></div>'+
+    (KNOW.all?'<p class="lbl">同じ面の時間列</p>'+dryStrip(0):'')+
+  '</div>';
+}
+function seed(){
+  var b=el('seedB'); b.disabled=true; b.textContent='入れています';
+  up('k1a',128,function(){ KNOW.all=128; });
+  setTimeout(function(){ up('k1b',34,function(){ KNOW.north=34; }); },140);
+  setTimeout(function(){ up('k1c',6,function(){ KNOW.rework=6; }); },280);
+  setTimeout(function(){ up('k1d',6,function(){ OFFICE.pending=6; OFFICE.done=128; }); },420);
+  showEffect(1);
+  setTimeout(function(){ b.textContent='入りました'; build2(); drawKnow(3); slide(2); },1900);
+}
+function up(id,to,cb){
+  var n=el(id), v=0, st=Math.max(1,Math.round(to/22));
+  var t=setInterval(function(){ v+=st; if(v>=to){v=to; clearInterval(t); if(cb)cb();} n.innerHTML=v+'<em>件</em>'; },28);
+  pop(n);
+}
+
+/* ========== 1段 ベテランが残す ========== */
+function build2(){
+  el('c2').innerHTML='<div class="pane field">'+
+    '<div class="who"><i>田</i><b>田中<span>職人 22年</span></b><em>北面 3階</em></div>'+
+    faceRow('M-N3')+
+    '<div class="card"><div class="metrics">'+
+      '<div><span>気温</span>22℃</div><div><span>湿度</span>67%</div>'+
+      '<div><span>素地</span>24℃</div><div><span>前回から</span>8:20</div>'+
+    '</div><img class="srcimg" src="../images/IMG-13.png" alt="素地の表面温度を測っている手元"></div>'+
+    '<button class="shot" id="vShot" type="button" onclick="vTake()"><span class="g"></span><span class="lb">写真を撮る</span></button>'+
+    '<button class="mic" id="vMic" type="button" onclick="vSay()">'+mi()+'録音</button>'+
+    '<div id="vSaid"></div>'+
+    '<div class="pair">'+
+      '<button class="btn" id="vW" type="button" disabled onclick="vSave(\'wait\')">まだ塗れない</button>'+
+      '<button class="btn ghost" id="vG" type="button" disabled onclick="vSave(\'go\')">塗れる</button>'+
+    '</div>'+
+  '</div>';
+}
+function vTake(){
+  if(vShot) return; vShot=true;
+  var s=el('vShot'); s.insertAdjacentHTML('afterbegin','<img src="'+VET.photo+'" alt="">'); s.classList.add('has');
+  el('new3').innerHTML='<article class="hc"><img src="'+VET.photo+'" alt="">'+
+    '<div class="b"><div class="m">5/14　M-N3　22℃・67%</div><div class="d">写真</div>'+
+    '<p id="v3p" style="color:var(--faint)">まだ一言がありません</p></div></article>';
+  vReady();
+}
+function vSay(){
+  if(vVoice) return;
+  var m=el('vMic'); m.classList.add('on'); m.innerHTML=mi()+'録音中';
+  setTimeout(function(){
+    m.classList.remove('on'); m.innerHTML=mi()+'録音'; vVoice=true;
+    el('vSaid').innerHTML='<div class="said">'+VET.voice+'</div>';
+    var p=el('v3p'); if(p){ p.style.color='var(--sub)'; p.textContent=VET.voice; pop(p); }
+  },1000);
+}
+function vReady(){ if(vShot){ el('vW').disabled=false; el('vG').disabled=false; } }
+function vSave(j){
+  if(vJudge) return; vJudge=j; VET.judge=j; RECORDS.unshift(VET);
+  KNOW.all=129; KNOW.north=35; OFFICE.pending=7;
+  el('k3a').innerHTML='129<em>件</em>'; pop(el('k3a'));
+  setTimeout(function(){ el('k3b').innerHTML='35<em>件</em>'; pop(el('k3b')); },150);
+  setTimeout(function(){ el('k3d').innerHTML='7<em>件</em>'; pop(el('k3d')); },300);
+  var d=document.querySelector('#new3 .d');
+  setTimeout(function(){ d.textContent=hm(VET.wait)+' で'+(j==='wait'?'待った':'塗った'); pop(d); },430);
+  el('vW').disabled=true; el('vG').disabled=true;
+  setTimeout(function(){ build4(); build5(); slide(4); },1500);
+}
+
+/* ========== 2段 若手が判断する ========== */
+function build4(){
+  el('c4').innerHTML='<div class="pane field">'+
+    '<div class="who"><i>岡</i><b>岡崎<span>職人 1年目</span></b><em>南面 2階</em></div>'+
+    faceRow('M-S2')+
+    '<div class="card"><div class="metrics">'+
+      '<div><span>気温</span>'+NOW.temp+'℃</div><div><span>湿度</span>'+NOW.hum+'%</div>'+
+      '<div><span>素地</span>'+NOW.subst+'℃</div><div><span>前回から</span>'+NOW.elapsed+'</div>'+
+    '</div><img class="srcimg" src="../images/IMG-12.png" alt="足場の柱の温湿度計 22.4℃ 68%"><div class="std">塗料の表示　3時間以上</div></div>'+
+    '<button class="shot" id="yShot" type="button" onclick="yTake()"><span class="g"></span><span class="lb">写真を撮る</span></button>'+
+    '<div id="qz"></div>'+
+    '<div class="pair">'+
+      '<button class="btn" id="yW" type="button" disabled onclick="ySave(\'wait\')">まだ塗れない</button>'+
+      '<button class="btn ghost" id="yG" type="button" disabled onclick="ySave(\'go\')">塗れる</button>'+
+    '</div>'+
+  '</div>';
+}
+function build5(){
+  el('c5').innerHTML='<div class="pane know">'+
+    '<div class="who"><i>照</i><b>近い条件の記録</b><em id="h5c">'+near()+'件</em></div>'+
+    '<div id="h5n"></div><div class="scroll" id="h5"></div>'+
+  '</div>';
+  drawList(RECORDS.filter(function(r){return Math.abs(r.temp-NOW.temp)<=2 && Math.abs(r.hum-NOW.hum)<=6;}),true);
+}
+function drawList(list,short){
+  el('h5').innerHTML=list.map(function(r){
+    return '<article class="hc'+(r.vet?' today':'')+'"><img src="'+r.photo+'" alt="">'+
+      '<div class="b"><div class="m">'+r.date+'　'+r.face+'　'+r.temp+'℃・'+r.hum+'%</div>'+
+      '<div class="d '+r.judge+'">'+hm(r.wait)+' で'+(r.judge==='wait'?'待った':'塗った')+'</div>'+
+      '<p'+(short?' class="one"':'')+'>'+r.voice+'</p>'+
+      (!short&&r.result==='rework'?'<span class="rw">手直しになった</span>':'')+
+      '</div></article>';
+  }).join('');
+}
+function yTake(){
+  if(yShot) return; yShot=true;
+  var s=el('yShot'); s.insertAdjacentHTML('afterbegin','<img src="../images/IMG-03.png" alt="">'); s.classList.add('has');
+  drawQ();
+}
+function drawQ(){
+  el('qz').innerHTML='<p class="lbl">確認</p>'+
+    '<div class="card q"><h3>指で触ると、色が指に付きますか</h3><p class="src">5/9 M-N4 の記録から</p>'+
+      '<div class="pair" style="margin-top:0">'+
+        '<button class="opt'+(aTouch==='stick'?' sel':'')+'" type="button" onclick="setA(\'t\',\'stick\')">少し付く</button>'+
+        '<button class="opt'+(aTouch==='clean'?' sel':'')+'" type="button" onclick="setA(\'t\',\'clean\')">付かない</button>'+
+      '</div></div>'+
+    '<div class="card q"><h3>この面に、いま日は当たっていますか</h3><p class="src">北面の記録 '+KNOW.north+'件から</p>'+
+      '<div class="pair" style="margin-top:0">'+
+        '<button class="opt'+(aSun==='sun'?' sel':'')+'" type="button" onclick="setA(\'s\',\'sun\')">当たっている</button>'+
+        '<button class="opt'+(aSun==='shade'?' sel':'')+'" type="button" onclick="setA(\'s\',\'shade\')">日陰</button>'+
+      '</div></div>';
+}
+function setA(k,v){
+  if(k==='t') aTouch=v; else aSun=v;
+  var cards=el('qz').querySelectorAll('.q');
+  if(cards[0]){
+    var t=cards[0].querySelectorAll('.opt');
+    t[0].classList.toggle('sel', aTouch==='stick');
+    t[1].classList.toggle('sel', aTouch==='clean');
+  }
+  if(cards[1]){
+    var s=cards[1].querySelectorAll('.opt');
+    s[0].classList.toggle('sel', aSun==='sun');
+    s[1].classList.toggle('sel', aSun==='shade');
+  }
+  if(aTouch&&aSun) filterNow();
+}
+function filterNow(){
+  var list=RECORDS.filter(function(r){
+    var a = aTouch==='stick' ? r.judge==='wait' : r.judge==='go';
+    var n = /^M-[NW]/.test(r.face);
+    return a && (aSun==='shade' ? n : !n);
+  });
+  list.sort(function(x,y){ return aTouch==='stick' ? y.wait-x.wait : x.wait-y.wait; });
+  var v=list.filter(function(r){return r.vet;}), o=list.filter(function(r){return !r.vet;});
+  list=v.concat(o).slice(0,3);
+  document.querySelectorAll('#h5 .hc').forEach(function(n){ n.classList.add('fade'); });
+  setTimeout(function(){
+    el('h5c').textContent=list.length+'件';
+    var long=list.every(function(r){return r.wait>=360;});
+    var rw=list.some(function(r){return r.result==='rework';});
+    el('h5n').innerHTML='<p class="lbl" style="margin-top:0">'+near()+'件から絞りました'+
+      (long?'<br>いずれも6時間以上あけています':'')+(rw?'<br>うち1件は手直しになっています':'')+'</p>';
+    drawList(list,false);
+    el('yW').disabled=false; el('yG').disabled=false;
+  },360);
+}
+function ySave(j){
+  if(yJudge) return; yJudge=j;
+  el('yW').disabled=true; el('yG').disabled=true;
+  newRec={id:NOW.id,date:'5/14',face:'M-S2',wait:390,judge:j,result:'',photo:'../images/IMG-03.png',temp:NOW.temp,hum:NOW.hum,voice:NOW.voice};
+  RECORDS.unshift(newRec);
+  OFFICE.pending=8;
+  eveJudge=''; actLine=''; resLine=''; coma=0;
+  build6(); build7(); slide(6);
+}
+
+/* ========== 3段 時間と結果 ========== */
+var COMA=[
+  {t:'15:20',s:'前回から 4:20',p:'../images/IMG-03.png',hi:3},
+  {t:'17:30',s:'前回から 6:30',p:'../images/IMG-04.png',hi:4},
+  {t:'翌朝 08:10',s:'5月15日',p:'../images/IMG-05.png',hi:5}
+];
+function timeActions(){
+  if(coma===0){
+    return '<button class="btn" type="button" onclick="skipTime(1)">17:30の状態を見る</button>';
+  }
+  if(coma===1 && !eveJudge){
+    return '<p class="lbl" style="margin-top:0">いまは塗れますか</p>'+
+      '<div class="pair" style="margin-top:0">'+
+        '<button class="btn" type="button" onclick="reJudge(\'wait\')">まだ塗れない</button>'+
+        '<button class="btn ghost" type="button" onclick="reJudge(\'go\')">塗れる</button>'+
+      '</div>';
+  }
+  if(coma===1 && eveJudge){
+    return '<button class="btn" type="button" onclick="skipTime(2)">翌朝の状態を見る</button>';
+  }
+  if(coma===2 && !resLine){
+    return '<p class="lbl" style="margin-top:0">翌朝の結果</p>'+
+      '<div class="pair" style="margin-top:0">'+
+        '<button class="btn" type="button" onclick="setResult(\'ok\')">剥がれなし</button>'+
+        '<button class="btn ghost" type="button" onclick="setResult(\'rework\')">手直し</button>'+
+      '</div>';
+  }
+  return '';
+}
+function build6(){
+  var c=COMA[coma];
+  el('c6').innerHTML='<div class="pane time">'+
+    '<div class="who"><i>岡</i><b>岡崎<span>職人 1年目</span></b><em>南面 2階</em></div>'+
+    '<div class="clock">'+c.t+'<small>'+c.s+'</small></div>'+
+    dryStrip(c.hi)+
+    '<img class="dphoto" src="'+c.p+'" alt="南面2階の塗った面">'+
+    '<div id="tAct">'+timeActions()+'</div>'+
+  '</div>';
+}
+function build7(){ drawSlot(); }
+function drawSlot(){
+  var j=yJudge==='wait'?'まだ塗れない':'塗れる';
+  el('c7').innerHTML='<div class="pane know">'+
+    '<div class="who"><i>録</i><b>いまの記録</b><em>'+NOW.id+'</em></div>'+
+    '<div class="card">'+
+      '<div class="slot"><div class="k">確認</div><div class="v">'+(aTouch==='stick'?'指に少し付く':'指に付かない')+'　'+(aSun==='shade'?'日陰':'日が当たる')+'</div></div>'+
+      '<div class="slot"><div class="k">判断</div><div class="v" id="s7j">'+j+'</div></div>'+
+      '<div class="slot"><div class="k">実際</div><div class="v'+(actLine?'':' empty')+'" id="s7a">'+(actLine||'まだ')+'</div></div>'+
+      '<div class="slot"><div class="k">結果</div><div class="v'+(resLine?'':' empty')+'" id="s7r">'+(resLine||'翌朝に入ります')+'</div></div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:10px">'+
+      '<div class="row"><span class="k">結果あり</span><span class="v" id="s7d">'+OFFICE.done+'<em>件</em></span></div>'+
+      '<div class="row"><span class="k">結果待ち</span><span class="v" id="s7p">'+OFFICE.pending+'<em>件</em></span></div>'+
+    '</div>'+
+  '</div>';
+}
+function skipTime(n){
+  coma=n;
+  build6();
+  drawSlot();
+}
+function reJudge(j){
+  if(eveJudge) return;
+  eveJudge=j;
+  actLine = j==='go' ? '17:30に上塗りを始めた' : '17:30もまだ待った';
+  if(j==='go') newRec.wait=390;
+  drawSlot();
+  pop(el('s7a'));
+  el('tAct').innerHTML=timeActions();
+}
+function setResult(r){
+  if(resLine) return;
+  newRec.result=r;
+  resLine = r==='ok' ? '剥がれなし（5/15 08:10）' : '手直しになった（5/15 08:10）';
+  OFFICE.done=130; OFFICE.pending=7;
+  if(r==='rework') KNOW.rework=7;
+  drawSlot();
+  pop(el('s7r')); pop(el('s7d')); pop(el('s7p'));
+  el('tAct').innerHTML='';
+  setTimeout(function(){ build8(); build9(); slide(8); },1000);
+}
+
+/* ========== 4段 工務が確認する ========== */
+function build8(){
+  el('c8').innerHTML='<div class="pane office">'+
+    '<div class="who"><i>西</i><b>西村<span>工務</span></b><em>新しく入った記録</em></div>'+
+    '<img class="banner" src="../images/IMG-07.png" alt="足場のかかったみどりが丘ハイツ">'+
+    '<p class="lbl" style="margin-top:0">1年目の判断です</p>'+
+    '<article class="hc"><img src="'+newRec.photo+'" alt="">'+
+      '<div class="b"><div class="m">5/14　M-S2　'+newRec.temp+'℃・'+newRec.hum+'%</div>'+
+      '<div class="d">'+hm(newRec.wait)+' で'+(newRec.judge==='wait'?'待った':'塗った')+'</div><p>'+newRec.voice+'</p>'+
+      (newRec.result==='rework'?'<span class="rw">手直しになった</span>':'')+'</div></article>'+
+    '<p class="lbl">これをナレッジに入れますか</p>'+
+    '<div class="pair" style="margin-top:0">'+
+      '<button class="btn" id="okB" type="button" onclick="vet(\'in\')">入れる</button>'+
+      '<button class="btn ghost" id="ngB" type="button" onclick="vet(\'hold\')">保留にする</button>'+
+    '</div>'+
+  '</div>';
+}
+function build9(){
+  el('c9').innerHTML='<div class="pane know">'+
+    '<div class="who"><i>蓄</i><b>ナレッジ<span>いまの状態</span></b></div>'+
+    '<div class="card">'+
+      '<div class="row"><span class="k">ベテランの判断</span><span class="v" id="f1">129<em>件</em></span></div>'+
+      '<div class="row"><span class="k">1年目の判断</span><span class="v" id="f2">0<em>件</em></span></div>'+
+    '</div>'+
+    '<p class="lbl">面ごとの乾燥時間</p>'+
+    '<div class="card bar">'+
+      brow('南',BARS.S,false,'bS')+brow('東',BARS.E,false,'bE')+brow('北',BARS.N,true,'bN')+brow('西',BARS.W,false,'bW')+
+    '</div>'+
+    '<p class="lbl">溜まって分かったこと</p>'+
+    '<div class="card"><div class="kn">K-P7　西村（工務）</div>'+
+      '<div class="kb">この時期の北面は乾きが遅い。工程を組むときに北面を先に回すと、足場が1日縮む</div>'+
+      '<div class="kg" id="kg">北面 '+KNOW.north+'件<br>乾燥時間の中央値 7:24（他の面 5:30）</div></div>'+
+  '</div>';
+}
+function brow(n,v,hi,id){
+  return '<div class="r'+(hi?' hi':'')+'"><i>'+n+'</i><div class="t"><u id="'+id+'" style="width:'+Math.round(v/7.5*100)+'%"></u></div><em id="'+id+'v">'+v.toFixed(1)+'</em></div>';
+}
+function vet(k){
+  if(vetted) return; vetted=k;
+  el('okB').disabled=true; el('ngB').disabled=true;
+  if(k==='in'){
+    el('f2').innerHTML='1<em>件</em>'; pop(el('f2'));
+    BARS.N=7.5; el('bN').style.width='100%'; el('bNv').textContent='7.5';
+    el('kg').innerHTML='北面 '+KNOW.north+'件　南面に1年目の記録 1件<br>乾燥時間の中央値 7:30（他の面 5:30）';
+  }else{
+    el('f2').innerHTML='0<em>件</em>';
+    el('kg').innerHTML='北面 '+KNOW.north+'件<br>乾燥時間の中央値 7:24（他の面 5:30）<br>保留 1件';
+  }
+}
+
+/* init */
+build0();
+drawKnow(1); drawKnow(3);
+slide(0);
+</script>
+</body>
+</html>
