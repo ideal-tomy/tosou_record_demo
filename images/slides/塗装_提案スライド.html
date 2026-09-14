@@ -1,629 +1,351 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>塗装の判断を、会社に残す</title>
+<title>塗装の判断を、会社に残す｜導入提案</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  color-scheme: light only;
-  --paper:#DEE3E7;
-  --paper2:#E8ECF0;
-  --white:#FFFFFF;
-  --ink:#14181A;
-  --ink2:#5B635F;
-  --ink3:#9AA0A4;
-  --line:#DDE1E4;
-  --deep:#1B3A5C;
-  --deep2:#2A4F73;
-  --signal:#B8861B;
-  --sig-bg:#F6EBCF;
-  --shadow:0 8px 28px rgba(20,24,26,.08);
-  --radius:14px;
+  color-scheme:light only;
+  --paper:#f3f4f1;
+  --ink:#14201e;
+  --sub:#56615d;
+  --muted:#89918d;
+  --line:#d9ded9;
+  --deep:#174942;
+  --gold:#a87920;
+  --white:#fff;
+  --shadow:0 12px 32px rgba(20,32,30,.1);
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-html{ -webkit-text-size-adjust:100%; }
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--paper)}
 body{
+  margin:0;
   background:var(--paper);
   color:var(--ink);
   font-family:"Noto Sans JP","Noto Sans CJK JP","Hiragino Sans",sans-serif;
-  font-weight:400;
-  line-height:1.8;
+  line-height:1.75;
   -webkit-font-smoothing:antialiased;
-}
-h1,h2,h3,p,li,td,th,dt,dd{
   word-break:auto-phrase;
   line-break:strict;
-  text-wrap:balance;
 }
-p,li{ text-wrap:pretty; }
-
-/* ---- slide frame ---- */
-.deck{ scroll-snap-type:y mandatory; height:100dvh; overflow-y:auto; }
-.s{
-  scroll-snap-align:start;
-  min-height:100dvh;
-  display:flex; flex-direction:column; justify-content:center;
-  padding:clamp(28px,5vw,84px) clamp(28px,5vw,84px) clamp(56px,7vw,100px);
-  position:relative;
-  border-bottom:1px solid var(--line);
-  background:
-    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(27,58,92,.06), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(27,58,92,.04), transparent 50%),
-    var(--paper);
-}
-.s > .inner{ width:100%; max-width:960px; margin:0 auto; }
-.num{
-  position:absolute; right:clamp(16px,3vw,40px); bottom:clamp(18px,3vw,40px);
-  font-size:12px; font-weight:700; color:var(--ink2);
-  letter-spacing:.06em;
-  background:var(--white);
+h1,h2,h3,p,li{word-break:auto-phrase;line-break:strict;text-wrap:balance}
+.deck{max-width:880px;margin:0 auto;padding:0 22px 96px}
+.s{padding:36px 0;border-bottom:1px solid var(--line)}
+.s:last-child{border-bottom:0}
+.eyebrow{margin:0 0 10px;color:var(--deep);font-size:12px;font-weight:800;letter-spacing:.12em}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.25;letter-spacing:-.04em;margin:0;font-weight:900}
+h2{font-size:clamp(22px,3.2vw,32px);line-height:1.4;letter-spacing:-.03em;margin:0 0 14px;font-weight:900}
+h3{font-size:18px;line-height:1.45;margin:0 0 6px;font-weight:800}
+.lead{font-size:16px;color:var(--sub);margin:12px 0 0}
+.hero{padding-top:40px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:start}
+.hero-photo{position:relative;width:100%;overflow:hidden;border-radius:4px;box-shadow:var(--shadow);margin:0;aspect-ratio:16/10}
+.hero-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-photo:after{content:"";position:absolute;inset:auto 0 0;height:42%;background:linear-gradient(transparent,rgba(8,28,24,.58))}
+.caption{position:absolute;z-index:1;bottom:14px;left:16px;color:#fff;font-size:12px;font-weight:700}
+.route{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin-top:22px}
+.route span{padding:10px 14px;background:#e5ece8;border:1px solid #cbd8d2;font-size:13px;font-weight:800}
+.route i{width:20px;height:1px;background:var(--deep);position:relative}
+.route i:after{content:"";position:absolute;right:0;top:-3px;width:7px;height:7px;border-top:1px solid var(--deep);border-right:1px solid var(--deep);transform:rotate(45deg)}
+.screen-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.flow-label{font-weight:800;font-size:13px;margin:8px 0 0}
+.phone{background:#182321;border-radius:14px;padding:7px;box-shadow:var(--shadow);height:280px}
+.phone-inner{height:100%;border-radius:10px;background:#eef2f1;overflow:hidden;color:var(--ink);font-size:10px}
+.phone-head{padding:10px 10px 7px;border-bottom:1px solid #d5ddda;font-weight:800}
+.phone-body{padding:10px}
+.tiny-metrics{display:flex;gap:4px;margin-bottom:8px}
+.tiny-metrics b{background:#fff;border:1px solid #d7dfdc;border-radius:5px;padding:5px 3px;flex:1;text-align:center;font-size:11px}
+.tiny-photo{height:92px;border-radius:7px;overflow:hidden;background:#3a4844;margin-bottom:8px}
+.tiny-photo img{width:100%;height:100%;object-fit:cover}
+.question-mini,.record-mini{background:#fff;border:1px solid #d7dfdc;border-radius:7px;padding:8px;margin-bottom:7px}
+.question-mini strong,.record-mini strong{display:block;font-size:11px}
+.question-mini em,.record-mini em{font-style:normal;color:var(--muted);font-size:9px}
+.answer-mini{display:flex;gap:4px;margin-top:6px}
+.answer-mini span{flex:1;text-align:center;background:#e4ece9;border-radius:4px;padding:5px 2px;font-weight:800}
+.answer-mini span.sel{background:var(--deep);color:#fff}
+.result-line{padding:8px 10px;border-left:3px solid var(--deep);background:#fff;font-weight:800;font-size:12px;margin-top:10px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.compare-item{background:var(--white);padding:16px 18px;border-top:4px solid var(--deep)}
+.compare-item.after{border-top-color:var(--gold)}
+.compare-item p{margin:5px 0 0;color:var(--sub);font-size:15px}
+.role-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:20px}
+.role{border-top:2px solid var(--deep);padding-top:12px}
+.role:nth-child(2){border-top-color:var(--gold)}
+.role:nth-child(3){border-top-color:#78968e}
+.role p{color:var(--sub);font-size:15px;margin:0}
+.role ul{margin:10px 0 0;padding-left:1.2em;color:var(--sub);font-size:14px}
+.management{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start;margin-top:18px}
+.dashboard{background:#fff;border:1px solid var(--line);padding:18px;box-shadow:var(--shadow)}
+.dash-top{display:flex;gap:10px;margin-bottom:14px}
+.kpi{flex:1;padding:12px;background:#f1f5f3}
+.kpi b{display:block;font-size:28px;line-height:1.1}
+.kpi span{font-size:12px;color:var(--muted);font-weight:700}
+.bars{display:grid;gap:12px}
+.bar{display:grid;grid-template-columns:42px 1fr 55px;gap:8px;align-items:center;font-size:13px;font-weight:800}
+.track{height:16px;background:#e4e9e7;border-radius:3px;overflow:hidden}
+.fill{display:block;height:100%;background:var(--deep)}
+.bar:nth-child(2) .fill{background:#8aa39c}
+.bar:nth-child(3) .fill{background:var(--gold)}
+.impact{border-left:3px solid var(--gold);padding:6px 0 6px 18px}
+.impact p{font-size:16px;font-weight:800;margin:0 0 10px}
+.impact ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:15px}
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:20px}
+.loop-item{background:#fff;padding:16px 14px;border-top:3px solid var(--deep)}
+.loop-item:nth-child(2){border-top-color:#4e8278}
+.loop-item:nth-child(3){border-top-color:var(--gold)}
+.loop-item:nth-child(4){border-top-color:#94a8a1}
+.loop-item:not(:last-child){border-right:1px solid var(--line);position:relative}
+.loop-item:not(:last-child):after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);z-index:2;color:var(--deep);font-weight:900;font-size:18px}
+.loop-item b{display:block;font-size:15px;margin-bottom:4px}
+.loop-item span{font-size:13px;color:var(--sub)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.step{padding:16px 14px;border-right:1px solid var(--line)}
+.step:last-child{border-right:0}
+.step b{display:block;color:var(--deep);font-size:26px;line-height:1;margin-bottom:10px}
+.step strong{display:block;font-size:15px;margin-bottom:4px}
+.step span{font-size:13px;color:var(--sub)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.metric{background:#fff;color:var(--ink);padding:14px 13px;border-bottom:3px solid #9fc0b5}
+.metric b{display:block;font-size:15px}
+.metric span{display:block;color:var(--sub);font-size:12px;margin-top:4px}
+.cta{background:var(--deep);color:#fff;margin:36px -22px 0;padding:36px 22px 40px}
+.cta .eyebrow,.cta .lead{color:#d2e1dc}
+.cta h2{max-width:16em}
+.cta-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center;max-width:880px;margin:0 auto}
+.cta-photo{height:220px;overflow:hidden;margin:0}
+.cta-photo img{width:100%;height:100%;object-fit:cover}
+.footer-note{margin:16px 0 0;font-size:13px;color:#b8d0c8}
+.num{display:block;margin-top:18px;color:var(--muted);font-size:12px}
+.back-demo{
+  position:fixed;right:16px;bottom:16px;z-index:20;
+  display:inline-flex;align-items:center;
+  background:var(--white);color:var(--deep);
   border:1px solid var(--line);
-  border-radius:999px;
-  padding:5px 12px;
-  box-shadow:0 2px 8px rgba(20,24,26,.05);
+  border-radius:999px;padding:10px 16px;
+  text-decoration:none;font-weight:800;font-size:13px;
+  box-shadow:0 8px 24px rgba(20,32,30,.12);
 }
-.eyebrow{
-  display:inline-block;
-  font-size:clamp(12px,1.3vw,14px); color:var(--deep); font-weight:700;
-  margin-bottom:14px;
-  background:rgba(27,58,92,.08);
-  border-radius:999px;
-  padding:5px 12px;
-  letter-spacing:.02em;
+@media(max-width:760px){
+  .deck{padding:0 16px 88px}
+  .s{padding:28px 0}
+  .hero{padding-top:28px}
+  .hero-photo{aspect-ratio:16/10}
+  .hero-grid,.management,.cta-grid{grid-template-columns:1fr;gap:18px}
+  .hero-photo{order:2}
+  .route{overflow-x:auto}
+  .route span{padding:8px 10px;font-size:12px}
+  .screen-flow{display:flex;overflow-x:auto;gap:12px;padding-bottom:8px}
+  .flow-item{flex:0 0 72vw;max-width:280px}
+  .phone{height:260px}
+  .compare,.role-grid{grid-template-columns:1fr;gap:12px}
+  .loop{display:flex;overflow-x:auto;margin:16px -16px 0;padding:0 16px 8px}
+  .loop-item{flex:0 0 200px}
+  .loop-item:not(:last-child){border-right:0;margin-right:12px}
+  .steps{display:flex;overflow-x:auto;margin-left:-16px;margin-right:-16px;padding:0 16px}
+  .step{flex:0 0 200px}
+  .metrics{grid-template-columns:1fr 1fr}
+  .cta{margin-left:-16px;margin-right:-16px;padding:28px 16px 36px}
 }
-h2{ font-size:clamp(24px,3.5vw,42px); font-weight:900; line-height:1.35; letter-spacing:-.01em; }
-h3{ font-size:clamp(16px,1.9vw,20px); font-weight:700; line-height:1.5; }
-.lead{ font-size:clamp(15px,1.7vw,19px); color:var(--ink2); margin-top:18px; max-width:44em; }
-
-/* ---- title ---- */
-.title{
-  background:
-    linear-gradient(160deg, #E4E9EE 0%, var(--paper) 45%, #E8EDF2 100%);
-}
-.title .inner{ position:relative; padding-left:clamp(16px,2vw,28px); }
-.title .inner::before{
-  content:""; position:absolute; left:0; top:0.2em; bottom:0.2em;
-  width:4px; border-radius:4px; background:var(--deep);
-}
-.title h1{
-  font-size:clamp(30px,6.2vw,68px); font-weight:900; line-height:1.24; letter-spacing:-.02em;
-}
-.coats{ display:flex; flex-direction:column; gap:8px; margin:clamp(26px,4vw,44px) 0; max-width:520px; }
-.coat{
-  height:clamp(18px,2.4vw,28px); border-radius:8px;
-  display:flex; align-items:center; padding-left:14px;
-  box-shadow:0 2px 8px rgba(27,58,92,.12);
-}
-.coat span{ font-size:11px; font-weight:700; color:var(--white); letter-spacing:.08em; }
-.c1{ background:#8FA3B8; }
-.c2{ background:#4A6A8A; }
-.c3{ background:var(--deep); }
-.meta{ font-size:clamp(13px,1.4vw,15px); color:var(--ink2); }
-.meta b{ font-weight:700; color:var(--ink); }
-
-/* ---- problem rows ---- */
-.rows{
-  margin-top:clamp(22px,3vw,38px);
-  display:flex; flex-direction:column; gap:12px;
-  border:0;
-}
-.row{
-  padding:clamp(16px,2vw,22px) clamp(16px,2.2vw,24px);
-  border:0;
-  background:var(--white);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  border-left:4px solid var(--deep);
-}
-.row h3{ margin-bottom:8px; }
-.row p{ font-size:clamp(14px,1.5vw,16px); color:var(--ink2); max-width:46em; }
-
-/* ---- head block (5 lines) ---- */
-.head{ margin-top:clamp(22px,3vw,36px); max-width:760px; display:flex; flex-direction:column; gap:6px; }
-.head .ln{
-  padding:clamp(11px,1.4vw,15px) clamp(14px,2vw,22px);
-  font-size:clamp(14px,1.7vw,18px);
-  color:var(--ink3);
-  border-left:3px solid var(--line);
-  background:rgba(255,255,255,.7);
-  border-radius:0 10px 10px 0;
-}
-.head .keep{
-  color:var(--ink); font-weight:700;
-  background:var(--white);
-  border-left:4px solid var(--deep);
-  box-shadow:var(--shadow);
-  padding:clamp(14px,1.6vw,18px) clamp(14px,2vw,22px);
-}
-.tag{
-  display:inline-block; font-size:11px; font-weight:700; color:#fff;
-  background:var(--deep);
-  margin-left:10px; vertical-align:middle;
-  border-radius:999px; padding:3px 10px;
-}
-
-/* ---- consequences ---- */
-.three{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(12px,2vw,20px); margin-top:clamp(22px,3vw,36px); counter-reset:box; }
-.three .box{
-  background:var(--white); border-radius:var(--radius);
-  padding:clamp(18px,2.2vw,26px);
-  border-top:4px solid var(--deep);
-  box-shadow:var(--shadow);
-  counter-increment:box;
-  position:relative;
-}
-.three .box::before{
-  content:counter(box);
-  display:grid; place-items:center;
-  width:28px; height:28px; border-radius:50%;
-  background:var(--deep); color:#fff;
-  font-size:13px; font-weight:900;
-  margin-bottom:12px;
-}
-.three h3{ margin-bottom:8px; }
-.three p{ font-size:clamp(13px,1.4vw,15px); color:var(--ink2); }
-
-/* ---- record card ---- */
-.rec{
-  background:var(--white); border-radius:var(--radius);
-  margin-top:clamp(20px,3vw,34px); max-width:720px; overflow:hidden;
-  box-shadow:var(--shadow);
-  border:1px solid var(--line);
-}
-.rec .r{
-  display:grid; grid-template-columns:96px 1fr; gap:12px;
-  padding:clamp(12px,1.5vw,16px) clamp(16px,2vw,22px);
-  border-bottom:1px solid var(--line);
-  align-items:baseline;
-}
-.rec .r:last-child{ border-bottom:0; }
-.rec dt{ font-size:13px; color:var(--ink2); font-weight:500; }
-.rec dd{ font-size:clamp(14px,1.6vw,17px); font-weight:500; }
-.auto{
-  font-size:11px; color:var(--deep); font-weight:700;
-  margin-left:8px;
-  background:rgba(27,58,92,.08);
-  border-radius:999px; padding:2px 8px;
-}
-.after{ margin-top:16px; font-size:clamp(13px,1.4vw,15px); color:var(--ink2); }
-
-/* ---- two records ---- */
-.pair{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(12px,2vw,20px); margin-top:clamp(20px,3vw,34px); }
-.pair .p{
-  background:var(--white); border-radius:var(--radius);
-  padding:clamp(16px,2vw,24px);
-  box-shadow:var(--shadow);
-  border:1px solid var(--line);
-}
-.pair .p.wait{ border-left:4px solid var(--deep); }
-.pair .p.go{ border-left:4px solid var(--signal); }
-.same{ font-size:13px; color:var(--ink3); padding-bottom:10px; border-bottom:1px solid var(--line); }
-.dec{ font-size:clamp(19px,2.6vw,30px); font-weight:900; margin:14px 0 10px; }
-.dec.wait{ color:var(--deep); }
-.dec.go{ color:var(--signal); }
-.said{ font-size:clamp(13px,1.5vw,16px); color:var(--ink2); line-height:1.85; }
-.point{
-  margin-top:clamp(16px,2vw,24px); background:var(--sig-bg);
-  border-radius:var(--radius); padding:clamp(14px,2vw,20px);
-  font-size:clamp(14px,1.6vw,18px); font-weight:700; max-width:640px;
-  border:1px solid rgba(184,134,27,.25);
-}
-
-/* ---- list ---- */
-.ul{ margin-top:clamp(20px,3vw,34px); list-style:none; background:var(--white); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
-.ul li{
-  padding:clamp(13px,1.6vw,17px) clamp(16px,2vw,22px) clamp(13px,1.6vw,17px) 48px;
-  border-bottom:1px solid var(--line);
-  font-size:clamp(15px,1.7vw,18px);
-  position:relative;
-}
-.ul li:nth-child(even){ background:rgba(232,236,240,.55); }
-.ul li:last-child{ border-bottom:0; }
-.ul li::before{
-  content:"";
-  position:absolute; left:18px; top:50%; transform:translateY(-50%);
-  width:16px; height:16px; border-radius:50%;
-  background:var(--deep);
-  box-shadow:inset 0 0 0 3px #fff, 0 0 0 1px var(--deep);
-}
-
-/* ---- figure ---- */
-.fig{
-  margin-top:clamp(18px,2.4vw,30px);
-  background:var(--white);
-  border-radius:var(--radius);
-  padding:clamp(16px,2vw,24px);
-  box-shadow:var(--shadow);
-  border:1px solid var(--line);
-}
-.fig svg{ width:100%; height:auto; display:block; }
-.key{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
-.key span{
-  display:flex; align-items:center; gap:8px;
-  font-size:clamp(12px,1.3vw,14px); color:var(--ink2);
-  background:var(--paper2);
-  border-radius:999px;
-  padding:6px 12px;
-}
-.key i{ display:inline-block; width:16px; height:16px; flex:none; border-radius:3px; }
-.k-band{ background:rgba(27,58,92,.22); border-top:2px solid rgba(27,58,92,.5); border-bottom:2px solid rgba(27,58,92,.5); }
-.k-dot{ background:var(--ink); border-radius:50%; width:12px !important; height:12px !important; }
-.k-x{ background:
-   linear-gradient(45deg,transparent 44%,var(--signal) 44%,var(--signal) 56%,transparent 56%),
-   linear-gradient(-45deg,transparent 44%,var(--signal) 44%,var(--signal) 56%,transparent 56%); }
-
-/* ---- steps ---- */
-.steps{
-  margin-top:clamp(20px,3vw,34px);
-  position:relative;
-  padding-left:8px;
-}
-.steps::before{
-  content:"";
-  position:absolute; left:27px; top:18px; bottom:18px;
-  width:2px; background:var(--line);
-}
-.step{
-  display:grid; grid-template-columns:56px 1fr auto; gap:clamp(10px,2vw,20px);
-  align-items:center;
-  padding:clamp(12px,1.6vw,16px) 0;
-  border-bottom:0;
-  position:relative;
-}
-.step .n{
-  width:40px; height:40px; border-radius:50%;
-  display:grid; place-items:center;
-  font-size:clamp(16px,2vw,20px); font-weight:900; color:#fff;
-  background:var(--deep);
-  box-shadow:0 0 0 4px var(--paper);
-  z-index:1;
-}
-.step .t{
-  font-size:clamp(15px,1.7vw,18px);
-  background:var(--white);
-  border-radius:12px;
-  padding:12px 16px;
-  box-shadow:var(--shadow);
-}
-.step .w{
-  font-size:12px; font-weight:700; color:var(--deep);
-  background:rgba(27,58,92,.08);
-  border-radius:999px;
-  padding:5px 12px;
-  white-space:nowrap;
-}
-.step .w:empty{ display:none; }
-
-/* ---- closing ---- */
-.close .inner{
-  background:var(--white);
-  border-radius:20px;
-  padding:clamp(28px,4vw,48px);
-  box-shadow:var(--shadow);
-  border:1px solid var(--line);
-}
-.close h2{ max-width:20em; }
-.close .lead{ margin-top:22px; }
-.close .coats{ max-width:280px; }
-
-/* ---- demo return ---- */
-.demo-back{
-  position:fixed;
-  right:clamp(14px,2.5vw,28px);
-  bottom:clamp(14px,2.5vw,28px);
-  z-index:50;
-  display:inline-flex; align-items:center; gap:8px;
-  background:var(--deep); color:#fff;
-  font-family:inherit; font-size:14px; font-weight:700;
-  text-decoration:none;
-  border:0; border-radius:999px;
-  padding:12px 18px;
-  box-shadow:0 6px 20px rgba(27,58,92,.28);
-  transition:transform .2s ease, background .2s ease;
-}
-.demo-back:hover{ background:var(--deep2); transform:translateY(-1px); }
-.demo-back:focus-visible{ outline:2px solid var(--deep); outline-offset:3px; }
-.demo-back svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-
-@media (max-width:760px){
-  .three{ grid-template-columns:1fr; }
-  .pair{ grid-template-columns:1fr; }
-  .rec .r{ grid-template-columns:80px 1fr; }
-  .step{ grid-template-columns:44px 1fr; }
-  .step .w{ grid-column:2; justify-self:start; }
-  .steps::before{ left:21px; }
-  .s{ min-height:auto; padding:44px 20px 72px; }
-  .deck{ scroll-snap-type:none; height:auto; overflow:visible; }
-  .num{ position:static; margin-top:26px; align-self:flex-start; }
-  .demo-back{ left:14px; right:14px; justify-content:center; }
-}
-
-@media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important; } }
-
-@media (prefers-color-scheme:dark){
-  html, body{ background:#DEE3E7 !important; color:#14181A !important; }
-  .s,.title{ background:#DEE3E7 !important; border-bottom-color:#DDE1E4 !important; }
-  h1,h2,h3{ color:#14181A !important; }
-  .lead,.row p,.three p,.said,.after,.step .w,.rec dt,.meta{ color:#5B635F !important; }
-  .num,.same,.head .ln{ color:#9AA0A4 !important; }
-  .eyebrow,.step .n,.tag,.demo-back{ background:#1B3A5C !important; color:#FFFFFF !important; }
-  .rec,.three .box,.pair .p,.ul,.fig,.close .inner,.row,.step .t,.num{ background:#FFFFFF !important; }
-  .head .ln{ background:rgba(255,255,255,.7) !important; }
-  .head .keep{ background:#FFFFFF !important; color:#14181A !important; }
-  .point{ background:#F6EBCF !important; color:#14181A !important; }
-  .rec .r,.row,.ul li,.step,.rows,.rec,.same,.fig,.close .inner{ border-color:#DDE1E4 !important; }
-  .dec.wait{ color:#1B3A5C !important; }
-  .dec.go{ color:#B8861B !important; }
-  .key span{ color:#5B635F !important; background:#E8ECF0 !important; }
-  .k-dot{ background:#14181A !important; }
-}
-
-@media print{
-  .deck{ height:auto; overflow:visible; }
-  .s{ min-height:auto; page-break-after:always; border-bottom:0; }
-  .demo-back{ display:none; }
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media(prefers-color-scheme:dark){
+  html,body{background:#f3f4f1!important;color:#14201e!important}
+  .phone-inner,.dashboard,.metric,.compare-item,.loop-item,.step{color:#14201e!important}
 }
 </style>
 </head>
 <body>
+<a class="back-demo" href="/">デモに戻る</a>
 <main class="deck">
-
-<!-- 1 -->
-<section class="s title">
-  <div class="inner">
-    <h1>塗装の判断を、<br>会社に残す</h1>
-    <div class="coats">
-      <div class="coat c1"><span>下塗り</span></div>
-      <div class="coat c2"><span>中塗り</span></div>
-      <div class="coat c3"><span>上塗り</span></div>
+  <section class="s hero">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">塗装デモ後の導入提案</p>
+        <h1>塗装の判断を、<br>会社に残す</h1>
+        <p class="lead">その日の判断を、次の現場で使える情報に変える。</p>
+        <div class="route">
+          <span>現場の判断</span><i></i>
+          <span>共有できる記録</span><i></i>
+          <span>会社の運営</span>
+        </div>
+      </div>
+      <figure class="hero-photo">
+        <img src="/IMG-07.png" alt="足場のかかった建物">
+        <figcaption class="caption">みどりが丘ハイツ 外壁改修</figcaption>
+      </figure>
     </div>
-    <p class="meta"><b>御社名</b> 御中　／　ご提案</p>
-  </div>
-  <div class="num">1</div>
-</section>
+  </section>
 
-<!-- 2 -->
-<section class="s">
-  <div class="inner">
-    <h2>こういうことが起きていませんか</h2>
-    <div class="rows">
-      <div class="row">
-        <h3>ベテランが休むと、確認待ちになりやすい</h3>
-        <p>塗り重ねてよいかを決めているのは、たいてい決まった1人か2人です。その人がいない日は、電話で聞くか、進めるか、待つかの判断が現場に残ります。</p>
+  <section class="s">
+    <p class="eyebrow">DEMOで体験した仕組み</p>
+    <h2>1件の判断が、次の人の判断材料になる</h2>
+    <p class="lead">撮影から翌朝の結果まで、判断の前後をひとつの記録としてつなげます。</p>
+    <div class="screen-flow">
+      <div class="flow-item">
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="phone-head">南面 2階　中塗り → 上塗り</div>
+            <div class="phone-body">
+              <div class="tiny-metrics"><b>22℃</b><b>68%</b><b>4:20</b></div>
+              <div class="tiny-photo"><img src="/IMG-03.png" alt="塗装面"></div>
+              <div class="question-mini">
+                <strong>確認</strong>
+                <em>指で触ると、色が指に付きますか</em>
+                <div class="answer-mini"><span class="sel">少し付く</span><span>付かない</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="flow-label">撮影・確認</p>
       </div>
-      <div class="row">
-        <h3>標準の時間どおりに塗って、手直しにつながることがある</h3>
-        <p>塗料に書いてある乾燥時間は3時間以上です。その日の気温・湿度・日当たりによっては、表示時間だけでは足りない場合があります。</p>
+      <div class="flow-item">
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="phone-head">絞られた記録　3件</div>
+            <div class="phone-body">
+              <div class="record-mini"><strong>M-N4　9:30</strong><em>まだ塗れない</em><br>北の影が残っている</div>
+              <div class="record-mini"><strong>M-N2　7:30</strong><em>まだ塗れない</em><br>指に色が残る</div>
+              <div class="record-mini"><strong>M-W2　7:20</strong><em>まだ塗れない</em><br>午後から影になる</div>
+              <div class="result-line">近い記録を見て、人が決める</div>
+            </div>
+          </div>
+        </div>
+        <p class="flow-label">近い記録を参照</p>
       </div>
-      <div class="row">
-        <h3>教える人によって、言うことが違う</h3>
-        <p>指で触って決める人もいれば、見た目で決める人もいます。どちらも正しいのですが、若手はどちらに合わせればよいか分かりません。同じ現場でも仕上がりにばらつきが出ます。</p>
-      </div>
-      <div class="row">
-        <h3>その人が辞めると、判断の根拠も残らない</h3>
-        <p>何年もかけて身につけた判断の理由が、記録されないまま会社から出ていくことがあります。</p>
-      </div>
-    </div>
-  </div>
-  <div class="num">2</div>
-</section>
-
-<!-- 3 -->
-<section class="s">
-  <div class="inner">
-    <p class="eyebrow">現場で起きていること</p>
-    <h2>ベテランは、これだけのことを考えて決めています</h2>
-    <div class="head">
-      <div class="ln">気温22℃、湿度68%、前回から4時間20分</div>
-      <div class="ln">標準では、塗ってよい時間</div>
-      <div class="ln">でも指で触ると、まだ少し取れる</div>
-      <div class="ln">南面なら塗るが、この面は午後から日が当たらない</div>
-      <div class="ln keep">あと2時間待った<span class="tag">記録に残るのは、ここだけ</span></div>
-    </div>
-    <p class="lead">なぜそう決めたのかは、どこにも残りません。残るのは結果だけです。</p>
-  </div>
-  <div class="num">3</div>
-</section>
-
-<!-- 4 -->
-<section class="s">
-  <div class="inner">
-    <h2>だから、次の人は一から覚え直す</h2>
-    <div class="three">
-      <div class="box">
-        <h3>聞きに行くしかない</h3>
-        <p>覚える方法が、ベテランに聞くことしかありません。聞かれた側は、そのたびに作業が止まります。</p>
-      </div>
-      <div class="box">
-        <h3>聞きづらくなる</h3>
-        <p>手が空いていないのが分かるので、若手は聞かなくなります。自分で判断して、失敗します。</p>
-      </div>
-      <div class="box">
-        <h3>基準が揃わない</h3>
-        <p>聞く相手によって答えが違います。会社としての基準が、どこにもありません。</p>
+      <div class="flow-item">
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="phone-head">R-20260514-014</div>
+            <div class="phone-body">
+              <div class="result-line">確認　少し付く ／ 日陰</div>
+              <div class="result-line">判断　まだ塗れない</div>
+              <div class="tiny-photo" style="height:110px;margin-top:12px"><img src="/IMG-05.png" alt="翌朝の塗装面"></div>
+              <div class="result-line">結果　剥がれなし（5/15）</div>
+            </div>
+          </div>
+        </div>
+        <p class="flow-label">判断・翌朝の結果</p>
       </div>
     </div>
-  </div>
-  <div class="num">4</div>
-</section>
+  </section>
 
-<!-- 5 -->
-<section class="s">
-  <div class="inner">
-    <p class="eyebrow">ご提案</p>
-    <h2>判断したときに、写真1枚と一言だけ残します</h2>
-    <div class="rec">
-      <div class="r"><dt>写真</dt><dd>南面2階の塗った面</dd></div>
-      <div class="r"><dt>数値</dt><dd>気温22℃　湿度68%　素地26℃　前回から4:20<span class="auto">自動で入ります</span></dd></div>
-      <div class="r"><dt>一言</dt><dd>まだ指で触ると少し取れる。あと2時間見る</dd></div>
-      <div class="r"><dt>判断</dt><dd>まだ塗れない</dd></div>
-    </div>
-    <p class="after">写真を撮って、話して、2つのうち1つを押す。文字は打ちません。翌日、剥がれがなかったかを入れて1件が完成します。</p>
-  </div>
-  <div class="num">5</div>
-</section>
-
-<!-- 6 -->
-<section class="s">
-  <div class="inner">
-    <h2>若手は、現場でこれを見ます</h2>
-    <div class="pair">
-      <div class="p wait">
-        <p class="same">5月9日　気温22℃　湿度68%</p>
-        <p class="dec wait">9時間30分待った</p>
-        <p class="said">数字は同じでも、北の影が残ってる。指で触るとまだ取れる</p>
+  <section class="s">
+    <p class="eyebrow">現場の変化</p>
+    <h2>聞く前に、過去の判断を見られる</h2>
+    <div class="compare">
+      <div class="compare-item">
+        <h3>導入前</h3>
+        <p>ベテランに電話して確認する。数値と標準時間だけでは迷い、判断理由はその場で消える。</p>
       </div>
-      <div class="p go">
-        <p class="same">5月8日　気温22℃　湿度68%</p>
-        <p class="dec go">6時間10分で塗った</p>
-        <p class="said">日が回ってきた。触っても指に付かない</p>
+      <div class="compare-item after">
+        <h3>導入後</h3>
+        <p>写真・確認回答・一言を比較し、自分の判断をつくる。判断と翌朝の結果が次の記録になる。</p>
       </div>
     </div>
-    <p class="point">同じ数値で、判断が違う。決め手は「指で触る」ことだと、教わらなくても伝わります。</p>
-  </div>
-  <div class="num">6</div>
-</section>
+    <p class="lead">システムが正解を出すのではなく、若手が自分で判断するための材料を揃えます。</p>
+  </section>
 
-<!-- 7 -->
-<section class="s">
-  <div class="inner">
-    <h2>会社として変わること</h2>
-    <ul class="ul">
-      <li>ベテランがいない日でも、若手が過去の判断を参照できます</li>
-      <li>若手が一人で判断できるまでの期間を短縮できるか検証できます</li>
-      <li>ベテランが、聞かれるたびに手を止めなくてよくなります</li>
-      <li>教える人によって基準が違うことが見えるので、会社として揃えられます</li>
-      <li>判断が会社に残ります。人が辞めても、その分は残ります</li>
-    </ul>
-  </div>
-  <div class="num">7</div>
-</section>
+  <section class="s">
+    <p class="eyebrow">役割の変化</p>
+    <h2>ベテランの経験が、教育資産になる</h2>
+    <div class="role-grid">
+      <article class="role">
+        <h3>現場</h3>
+        <p>条件の近い記録を見て、若手が自分で判断できる。</p>
+        <ul>
+          <li>写真と数値を比較できる</li>
+          <li>判断理由を参照できる</li>
+        </ul>
+      </article>
+      <article class="role">
+        <h3>ベテラン</h3>
+        <p>判断を代行し続けるのではなく、判断の観点を残せる。</p>
+        <ul>
+          <li>「少し付く」「日陰が残る」を記録できる</li>
+          <li>同じ質問への対応を減らせる</li>
+        </ul>
+      </article>
+      <article class="role">
+        <h3>経営・管理</h3>
+        <p>現場の判断を、工程と教育を考える材料として見られる。</p>
+        <ul>
+          <li>結果待ちと手直しを確認できる</li>
+          <li>実際の記録で教育できる</li>
+        </ul>
+      </article>
+    </div>
+  </section>
 
-<!-- 8 -->
-<section class="s">
-  <div class="inner">
-    <h2>記録が増えると、どうなるか</h2>
-    <div class="fig">
-      <svg viewBox="0 0 900 420" role="img" aria-label="記録が増えるほど、参照できる判断材料が増えていくことを表した図。判断を決める点は最後まで人が打っている。">
-        <defs>
-          <g id="xm"><path d="M-6 -6 L6 6 M6 -6 L-6 6" stroke="#B8861B" stroke-width="2.6" stroke-linecap="round" fill="none"/></g>
-        </defs>
-
-        <path d="M60 60 L840 150 L840 190 L60 260 Z" fill="#1B3A5C" opacity="0.15"/>
-        <path d="M60 60 L840 150" stroke="#1B3A5C" stroke-width="2" opacity="0.45" fill="none"/>
-        <path d="M60 260 L840 190" stroke="#1B3A5C" stroke-width="2" opacity="0.45" fill="none"/>
-
-        <circle cx="100" cy="95"  r="7" fill="#14181A"/>
-        <circle cx="160" cy="225" r="7" fill="#14181A"/>
-        <circle cx="220" cy="110" r="7" fill="#14181A"/>
-        <circle cx="290" cy="205" r="7" fill="#14181A"/>
-        <circle cx="350" cy="130" r="7" fill="#14181A"/>
-        <circle cx="420" cy="200" r="7" fill="#14181A"/>
-        <circle cx="490" cy="140" r="7" fill="#14181A"/>
-        <circle cx="560" cy="190" r="7" fill="#14181A"/>
-        <circle cx="630" cy="150" r="7" fill="#14181A"/>
-        <circle cx="700" cy="185" r="7" fill="#14181A"/>
-        <circle cx="770" cy="158" r="7" fill="#14181A"/>
-        <circle cx="820" cy="178" r="7" fill="#14181A"/>
-
-        <line x1="60" y1="295" x2="840" y2="295" stroke="#DDE1E4" stroke-width="1"/>
-
-        <use href="#xm" x="90"  y="330"/>
-        <use href="#xm" x="116" y="352"/>
-        <use href="#xm" x="146" y="326"/>
-        <use href="#xm" x="176" y="346"/>
-        <use href="#xm" x="208" y="334"/>
-        <use href="#xm" x="244" y="352"/>
-        <use href="#xm" x="286" y="328"/>
-        <use href="#xm" x="330" y="344"/>
-        <use href="#xm" x="384" y="332"/>
-        <use href="#xm" x="452" y="340"/>
-        <use href="#xm" x="524" y="328"/>
-        <use href="#xm" x="600" y="346"/>
-        <use href="#xm" x="718" y="334"/>
-        <use href="#xm" x="812" y="344"/>
-
-        <text x="60" y="398" font-size="17" fill="#5B635F" font-family="Noto Sans JP, sans-serif">記録が少ないころ</text>
-        <text x="840" y="398" font-size="17" fill="#5B635F" text-anchor="end" font-family="Noto Sans JP, sans-serif">記録が溜まったあと</text>
-      </svg>
-      <div class="key">
-        <span><i class="k-band"></i>参考にできる範囲</span>
-        <span><i class="k-dot"></i>人が決めた判断</span>
-        <span><i class="k-x"></i>手直し</span>
+  <section class="s">
+    <p class="eyebrow">経営・管理への波及</p>
+    <h2>現場の記録を、工程と教育に使える</h2>
+    <div class="management">
+      <div class="dashboard" aria-label="管理画面のイメージ">
+        <div class="dash-top">
+          <div class="kpi"><b>129</b><span>結果あり</span></div>
+          <div class="kpi"><b>5</b><span>結果待ち</span></div>
+        </div>
+        <div class="bars">
+          <div class="bar"><b>南</b><div class="track"><i class="fill" style="width:72%"></i></div><span>5.5h</span></div>
+          <div class="bar"><b>東</b><div class="track"><i class="fill" style="width:70%"></i></div><span>5.5h</span></div>
+          <div class="bar"><b>北</b><div class="track"><i class="fill" style="width:100%"></i></div><span>7.5h</span></div>
+        </div>
+      </div>
+      <div class="impact">
+        <p>判断できる材料を増やします。</p>
+        <ul>
+          <li>乾きにくい面を工程計画へ反映する</li>
+          <li>手直しの前後を振り返る</li>
+          <li>若手の教育に実際の記録を使う</li>
+        </ul>
       </div>
     </div>
-    <p class="lead">記録が増えるほど、参照できる判断材料が増えます。決めるのは、最後まで人のままです。</p>
-  </div>
-  <div class="num">8</div>
-</section>
+  </section>
 
-<!-- 9 -->
-<section class="s">
-  <div class="inner">
-    <p class="eyebrow">このあとお見せするもの</p>
-    <h2>若手が現場で判断する場面を、触っていただきます</h2>
-    <p class="lead">数値だけでは決められないところで、過去の記録を見て、自分で決める。判断したものが翌朝に結果として返ってくる。その一周を体験していただきます。</p>
-    <p class="lead">経営側の画面は最後に1枚だけお見せします。ベテランの側の画面は、ほとんど出てきません。数秒で終わるものだからです。</p>
-  </div>
-  <div class="num">9</div>
-</section>
+  <section class="s">
+    <p class="eyebrow">経験が循環する仕組み</p>
+    <h2>1件の記録が、次の判断へ戻ってくる</h2>
+    <div class="loop">
+      <div class="loop-item"><b>判断する</b><span>写真・条件・確認回答・一言を残す</span></div>
+      <div class="loop-item"><b>参照する</b><span>近い条件の過去記録を見る</span></div>
+      <div class="loop-item"><b>結果を確認する</b><span>翌朝、剥がれや手直しを記録する</span></div>
+      <div class="loop-item"><b>会社で使う</b><span>次の現場・教育・工程計画へ戻す</span></div>
+    </div>
+    <p class="lead">判断を自動化するのではなく、経験を共有できる状態にします。</p>
+  </section>
 
-<!-- 10 -->
-<section class="s">
-  <div class="inner">
-    <h2>進め方</h2>
+  <section class="s">
+    <p class="eyebrow">導入の進め方</p>
+    <h2>最初から全社に広げず、1現場で確かめる</h2>
     <div class="steps">
-      <div class="step"><span class="n">1</span><span class="t">現場を1つ選んで、判断を残し始めます</span><span class="w">1か月</span></div>
-      <div class="step"><span class="n">2</span><span class="t">溜まった記録を見て、残す項目を調整します</span><span class="w">1か月</span></div>
-      <div class="step"><span class="n">3</span><span class="t">若手が現場で見る形にします</span><span class="w"></span></div>
-      <div class="step"><span class="n">4</span><span class="t">他の現場に広げます</span><span class="w"></span></div>
+      <div class="step"><b>01</b><strong>1現場で記録する</strong><span>写真・確認回答・判断・結果を残す</span></div>
+      <div class="step"><b>02</b><strong>記録を振り返る</strong><span>実際に使われた項目を確認する</span></div>
+      <div class="step"><b>03</b><strong>若手の判断で使う</strong><span>過去記録を見て判断できるか確かめる</span></div>
+      <div class="step"><b>04</b><strong>他の現場へ広げる</strong><span>負担を増やさない形で展開する</span></div>
     </div>
-    <p class="lead">最初から全社に入れることはしません。1つの現場で、続けられるかどうかを先に確かめます。</p>
-  </div>
-  <div class="num">10</div>
-</section>
+    <p class="lead">入力負荷、結果までの接続、若手の参照・判断、管理側の検索性を確認してから広げます。</p>
+  </section>
 
-<!-- 11 -->
-<section class="s close">
-  <div class="inner">
-    <h2>まず、1つの現場から始めませんか</h2>
-    <p class="lead">現場を見せていただければ、何を残すかを一緒に決めます。<br>残す項目は、御社のやり方に合わせて変えられます。</p>
-    <div class="coats" style="margin-top:34px;">
-      <div class="coat c1"></div>
-      <div class="coat c2"></div>
-      <div class="coat c3"></div>
+  <section class="s cta" id="contact">
+    <div class="cta-grid">
+      <div>
+        <p class="eyebrow">次の行動</p>
+        <h2>まず、判断が集中している1つの工程から。</h2>
+        <p class="lead">記録にかかる時間、結果入力率、若手が過去記録を参照して判断できるかを確認します。</p>
+        <div class="metrics">
+          <div class="metric"><b>記録時間</b><span>1件に何秒かかるか</span></div>
+          <div class="metric"><b>入力率</b><span>結果までつながるか</span></div>
+          <div class="metric"><b>判断のしやすさ</b><span>過去記録を使えるか</span></div>
+        </div>
+        <p class="footer-note">対象現場と、最初に残す判断を一緒に決めます。</p>
+      </div>
+      <figure class="cta-photo"><img src="/IMG-05.png" alt="翌朝の塗装面"></figure>
     </div>
-    <p class="meta">ideal合同会社</p>
-  </div>
-  <div class="num">11</div>
-</section>
-
+  </section>
 </main>
-
-<a class="demo-back" href="/">
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-  デモに戻る
-</a>
-
-<script>
-document.addEventListener('keydown',function(e){
-  if(e.key!=='ArrowDown'&&e.key!=='ArrowUp'&&e.key!=='PageDown'&&e.key!=='PageUp')return;
-  var deck=document.querySelector('.deck');
-  if(getComputedStyle(deck).overflowY!=='auto')return;
-  e.preventDefault();
-  var d=(e.key==='ArrowDown'||e.key==='PageDown')?1:-1;
-  var ss=[].slice.call(document.querySelectorAll('.s'));
-  var top=deck.scrollTop;
-  var i=0,best=Infinity;
-  ss.forEach(function(s,k){var v=Math.abs(s.offsetTop-top); if(v<best){best=v;i=k;}});
-  var t=ss[Math.max(0,Math.min(ss.length-1,i+d))];
-  deck.scrollTo({top:t.offsetTop,behavior:'smooth'});
-});
-</script>
 </body>
 </html>
