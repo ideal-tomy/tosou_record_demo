@@ -130,9 +130,17 @@ export function MicButton({
   );
 }
 
-export function Pair({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+export function Pair({
+  children,
+  style,
+  id,
+}: {
+  children: ReactNode;
+  style?: CSSProperties;
+  id?: string;
+}) {
   return (
-    <div className="pair" style={style}>
+    <div className="pair" id={id} style={style}>
       {children}
     </div>
   );

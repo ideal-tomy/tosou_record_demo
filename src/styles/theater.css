@@ -190,9 +190,13 @@ h1,h2,h3{text-wrap:balance;}
 .finale-cta .btn.ghost{background:var(--card); color:var(--ink); border:1px solid var(--line);}
 @keyframes finale-in{from{opacity:0; transform:translateY(12px) scale(.98)}to{opacity:1; transform:none}}
 
+.similar-block{margin-top:14px;}
+.similar-block .who{margin-bottom:8px;}
+
 @media (max-width:900px){
   .stage{overflow:visible; padding:14px 0; align-items:stretch; overflow-x:clip;}
   .track{display:block; padding:0 14px; transform:none !important; overflow-x:clip;}
+  .col.hist{display:none;}
   .col,.col.act,.col.fx,.col.hist{width:auto !important; max-width:100%; margin-bottom:12px; opacity:1; pointer-events:auto; overflow:visible;}
   .col.act .pane{box-shadow:none;}
   .col.fx .pane{min-height:0;}
@@ -204,7 +208,8 @@ h1,h2,h3{text-wrap:balance;}
     padding:12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
     box-sizing:border-box; max-width:100%;
   }
-  .pane.field .pair{background:linear-gradient(to bottom, rgba(230,226,218,0), #E6E2DA 12px, #E6E2DA);}
+  .pane.field .pair{background:linear-gradient(to bottom, rgba(230,226,218,0), #E6E2DA 28px, #E6E2DA);}
+  .foot{display:none;}
   .pane.time .t-act{background:linear-gradient(to bottom, rgba(227,231,238,0), #E3E7EE 12px, #E3E7EE);}
   .pane.seed .btn{background:#1B3A5C;}
   .pane.office .pair{background:linear-gradient(to bottom, rgba(228,235,230,0), #E4EBE6 12px, #E4EBE6);}

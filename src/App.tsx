@@ -7,7 +7,6 @@ import { KnowledgePane } from "./beats/KnowledgePane";
 import { OfficeBeat, OfficeKnow } from "./beats/OfficeBeat";
 import { RecordSlot } from "./beats/RecordSlot";
 import { SeedBeat } from "./beats/SeedBeat";
-import { SimilarPane } from "./beats/SimilarPane";
 import { TimeBeat } from "./beats/TimeBeat";
 import { VeteranBeat } from "./beats/VeteranBeat";
 import {
@@ -73,6 +72,16 @@ export default function App() {
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
   }, []);
+
+  useEffect(() => {
+    if (!canJudge || yJudge) return;
+    const el = document.getElementById("junior-judge");
+    if (!el) return;
+    const t = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 420);
+    return () => window.clearTimeout(t);
+  }, [canJudge, yJudge]);
 
   function start() {
     setCover("off");
@@ -190,7 +199,7 @@ export default function App() {
     setActLine("");
     setResLine("");
     setComa(0);
-    setCur(6);
+    setCur(5);
   }
 
   function skipTime(n: 1 | 2) {
@@ -214,7 +223,7 @@ export default function App() {
     setPopRes(true);
     window.setTimeout(() => {
       setShowOffice(true);
-      setCur(8);
+      setCur(7);
     }, 1000);
   }
 
@@ -277,21 +286,15 @@ export default function App() {
             judge={yJudge}
             north={know.north}
             canJudge={canJudge}
+            similarCount={similarFiltered ? similarFiltered.length : similarSource.length}
+            similarNote={similarNote}
+            similarList={similarSource}
+            similarShort={!similarFiltered}
+            similarFade={similarFade}
             onTake={yTake}
             onTouch={onTouch}
             onSun={onSun}
             onSave={ySave}
-          />
-        ) : (
-          <span />
-        )}
-        {showJunior ? (
-          <SimilarPane
-            count={similarFiltered ? similarFiltered.length : similarSource.length}
-            note={similarNote}
-            list={similarSource}
-            short={!similarFiltered}
-            fade={similarFade}
           />
         ) : (
           <span />

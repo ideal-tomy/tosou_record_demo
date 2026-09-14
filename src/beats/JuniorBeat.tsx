@@ -1,5 +1,6 @@
-import { img, NOW, type Judge, type SunAns, type TouchAns } from "../data/fixture";
-import { FaceRow, Pair, ShotButton, Who } from "../components/ui";
+import type { ReactNode } from "react";
+import { img, NOW, type Judge, type RecordItem, type SunAns, type TouchAns } from "../data/fixture";
+import { FaceRow, Pair, RecordCard, ShotButton, Who } from "../components/ui";
 
 export function JuniorBeat({
   shot,
@@ -8,6 +9,11 @@ export function JuniorBeat({
   judge,
   north,
   canJudge,
+  similarCount,
+  similarNote,
+  similarList,
+  similarShort,
+  similarFade,
   onTake,
   onTouch,
   onSun,
@@ -19,12 +25,18 @@ export function JuniorBeat({
   judge: Judge;
   north: number;
   canJudge: boolean;
+  similarCount: number;
+  similarNote?: ReactNode;
+  similarList: RecordItem[];
+  similarShort: boolean;
+  similarFade: boolean;
   onTake: () => void;
   onTouch: (v: Exclude<TouchAns, "">) => void;
   onSun: (v: Exclude<SunAns, "">) => void;
   onSave: (j: Exclude<Judge, "">) => void;
 }) {
   const ready = canJudge && !judge;
+  const showSimilar = shot && aTouch && aSun;
   return (
     <div className="pane field">
       <Who mark="岡" name="岡崎" role="職人 1年目" extra="南面 2階" />
@@ -81,7 +93,18 @@ export function JuniorBeat({
           </div>
         </>
       ) : null}
-      <Pair>
+      {showSimilar ? (
+        <div className="similar-block">
+          <Who mark="照" name="近い条件の記録" extra={`${similarCount}件`} />
+          {similarNote ? <p className="lbl" style={{ marginTop: 0 }}>{similarNote}</p> : null}
+          <div className="scroll">
+            {similarList.map((r) => (
+              <RecordCard key={r.id} r={r} short={similarShort} fade={similarFade} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <Pair id="junior-judge">
         <button className="btn" type="button" disabled={!ready} onClick={() => onSave("wait")}>
           まだ塗れない
         </button>
